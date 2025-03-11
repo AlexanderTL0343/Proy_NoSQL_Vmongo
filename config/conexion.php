@@ -1,6 +1,7 @@
 <?php
 require_once "global.php"; // Asegúrate de definir las constantes de conexión
 require_once __DIR__ . '/../vendor/autoload.php';
+
 class ConexionMongo
 {
     private static $conn = null;
