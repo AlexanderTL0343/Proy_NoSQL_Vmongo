@@ -1,0 +1,27 @@
+Pasos para instalar mongo en php y xaamp:
+
+1-IR A https://pecl.php.net/package/mongodb y descargar la version correspondiente a tu php y creo que mongo.
+
+2-Copia el archivo .dll a la carpeta de extensiones de PHP en XAMPP: 📂 C:\xampp\php\ext\
+
+3-Abre el archivo de configuración php.ini en XAMPP: 📄 C:\xampp\php\php.ini y despues Agrega esta línea al final del texto: extension=mongodb
+
+4-Reiniciar apache del xaamp (cerrar y abrir xaamp)
+
+5-Verifica que MongoDB está habilitado ejecutando: php -m | findstr mongodb
+Si aparece mongodb, la instalación fue exitosa. ✅
+
+//-----------------
+No se si los demas requieran instalar el COMPOSER (es un gestor de dependencias para php) en sus PC, pero en caso de que si
+solo preguntelen al GPT, asi lo instale yo XD
+
+//-----------------
+**SI QUIEREN PROBAR QUE CONECTE A MONGO DB:
+- vayan al la clase "conexion.php" en la carpeta "config".
+- hay 2 lineas comentadas, descomentelas.
+- ejecuten el APACHE de xaamp y vaya a la direccion del archivo config, ejemplo: http://localhost/SC502_3C2024_MN_G1/config/conexion.php
+- ahi veran el mensaje si conectaron o el error si no conectaron
+
+
+PSD:
+Inteliphense marcara error en los CATCH de conexion.

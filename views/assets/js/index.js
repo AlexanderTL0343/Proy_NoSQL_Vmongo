@@ -9,7 +9,7 @@ function limpiarFormulario() {
   document.getElementById("telefono").value = "";
 }
 
-function listarProfesiones(){
+function listarProfesiones() {
   $.ajax({
     url: "../controllers/UserController.php?op=obtenerProfesiones",
     type: "GET",
@@ -23,9 +23,9 @@ function listarProfesiones(){
           selectProfesion.innerHTML = ""; // Limpiar las opciones existentes
           
           datos[0].datos.forEach(profesion => {
-            const opt = document.createElement("option");//crear el option
-            opt.value = profesion.ID_PROFESION_PK; //asignar el valor
-            opt.text = profesion.NOMBRE_PROFESION; //asignar el texto que se muestra
+            const opt = document.createElement("option"); //crear el option
+            opt.value = profesion._id; // Asigna el valor del campo _id
+            opt.text = profesion.nombreProfesion; // Asigna el texto del campo nombreProfesion
             selectProfesion.appendChild(opt); //insertar el option en el select
           });
           
@@ -42,10 +42,8 @@ function listarProfesiones(){
     },
   });
 }
-/*document.getElementById("profesion").addEventListener("change", function () {
-  console.log(document.getElementById("profesion").value);
-});*/
-listarProfesiones();
+
+listarProfesiones();  // Llama a la función para cargar las profesiones
 
 
 //FUNCION PARA HABILITAR EL BOTON DE REGISTRAR POR EL CHECKBOX

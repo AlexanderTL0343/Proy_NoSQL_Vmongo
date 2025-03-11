@@ -1,0 +1,208 @@
+//------------------------------------------
+
+ESTE TXT TIENE EL PROPOSITO DE MANTENER ACTUALIZADO EL SCRIPT DE proyectoMongo
+
+//------------------------------------------
+COMENTARIOS:
+****pendiente los insert de CHATS, MENSAJES,CALIFICACIONES Y POSTULACIONES
+
+//------------------------------------------
+
+
+Creación BSD:
+use proyectoMongo;
+
+//------------------------------------------
+
+Creación de COLECCIONES:
+db.createCollection("ROLES");
+db.createCollection("ESTADOS");
+db.createCollection("CATEGORIAS");
+db.createCollection("PROFESIONES");
+db.createCollection("USUARIOS");
+db.createCollection("PUBLICACIONES");
+-- --
+db.createCollection("CHATS");
+db.createCollection("MENSAJES");
+db.createCollection("CALIFICACIONES");
+db.createCollection("POSTULACIONES");
+db.createCollection("REPORTES");
+db.createCollection("HISTORIAL_TRABAJOS");
+
+//------------------------------------------
+
+Creación de DOCUMENTOS:
+db.ROLES.insertMany([
+       { _id: 1, rol: "ADMIN" },
+       { _id: 2, rol: "POSTULANTE" },
+       { _id: 3, rol: "RECLUTADOR" }
+]);
+ 
+db.ESTADOS.insertMany([
+       { _id: 1, estado: "ACTIVO" },
+       { _id: 2, estado: "INACTIVO" }
+]);
+ 
+db.CATEGORIAS.insertMany([
+{ _id: 1, nombreCategoria: "CUIDADO-NINOS", descripcion: "Servicios de Cuidado de Niños" },
+{ _id: 2, nombreCategoria: "JARDINERIA", descripcion: "Servicios de Jardinería" },
+{ _id: 3, nombreCategoria: "ARREGLO-ROPA", descripcion: "Servicios de Arreglos de Ropa" },
+{ _id: 4, nombreCategoria: "LIMPIEZA", descripcion: "Servicios de Limpieza" },
+{ _id: 5, nombreCategoria: "CUIDADO-MASCOTAS", descripcion: "Servicios de Cuidado de Mascotas"},
+{_id: 6,nombreCategoria:"REPARACIONES",descripcion:"Servicios de Reparaciones y Mantenimiento"},
+{ _id: 7, nombreCategoria: "COMIDA-CATERING", descripcion: "Servicios de Comida y Catering" },
+{ _id: 8, nombreCategoria: "VENTAS", descripcion: "Servicios de Ventas" },
+{_id: 9, nombreCategoria:"ASISTENCIA-PERSONAL",descripcion: "Servicios de Asistencia Personal"},
+{ _id: 10, nombreCategoria: "BELLEZA", descripcion: "Servicios de Belleza" },
+{ _id: 11, nombreCategoria: "OTROS-EMPLEADOS", descripcion: "Otros Empleos" }
+]);
+ 
+db.PROFESIONES.insertMany([
+            	{ _id: 1, nombreProfesion: "Especialista en tecnología" },
+            	{ _id: 2, nombreProfesion: "Ingeniero" },
+            	{ _id: 3, nombreProfesion: "Profesional de la salud" },
+            	{ _id: 4, nombreProfesion: "Operador de transporte" }
+]);
+
+
+db.USUARIOS.insertMany([
+    { 
+        _id: 1, 
+        id_rol_fk: 1, 
+        id_estado_fk: 1, 
+        id_profesion_fk: 1, 
+        cedulaUsuario: "123456789", 
+        nombreUsuario: "Brandon", 
+        apellido1: "Aguirre",
+        apellido2: "Ortiz",
+        edad: 19,
+        direccion: "Calle Ficticia 123",
+        telefono: "987654321",
+        email: "test",
+        contrasena: "test",
+        facebook: "",
+        instagram: "",
+        fechaRegistro: new Date(),
+        imagen_url: ""
+    },
+    { 
+        _id: 2, 
+        id_rol_fk: 1, 
+        id_estado_fk: 1, 
+        id_profesion_fk: 1, 
+        cedulaUsuario: "123456789", 
+        nombreUsuario: "Juan", 
+        apellido1: "Perez",
+        apellido2: "Lopez",
+        edad: 30,
+        direccion: "Calle Ficticia 123",
+        telefono: "987654321",
+        email: "juan.perez@example.com",
+        contrasena: "password",
+        facebook: "",
+        instagram: "",
+        fechaRegistro: new Date(),
+        imagen_url: ""
+    },
+    { 
+        _id: 3, 
+        id_rol_fk: 2, 
+        id_estado_fk: 1, 
+        id_profesion_fk: 2, 
+        cedulaUsuario: "987654321", 
+        nombreUsuario: "Maria", 
+        apellido1: "Gomez",
+        apellido2: "Sanchez",
+        edad: 28,
+        direccion: "Avenida Central 456",
+        telefono: "654987123",
+        email: "maria.gomez@example.com",
+        contrasena: "password",
+        facebook: "",
+        instagram: "",
+        fechaRegistro: new Date(),
+        imagen_url: ""
+    },
+    { 
+        _id: 4, 
+        id_rol_fk: 3, 
+        id_estado_fk: 1, 
+        id_profesion_fk: 4, 
+        cedulaUsuario: "456789123", 
+        nombreUsuario: "Carlos", 
+        apellido1: "Martinez",
+        apellido2: "Ramirez",
+        edad: 35,
+        direccion: "Calle Real 789",
+        telefono: "321654987",
+        email: "carlos.martinez@example.com",
+        contrasena: "password",
+        facebook: "",
+        instagram: "",
+        fechaRegistro: new Date(),
+        imagen_url: ""
+    }
+]);
+
+db.REPORTES.insertMany([
+  {
+    _id: 1,
+    idReportante: 1,
+    idReportado: 2, 
+    tipo: "usuario",
+    idReferencia: 2, 
+    razon: "Lenguaje ofensivo en el chat",
+    estado: "pendiente",
+    fecha: new Date()
+  },
+  {
+    _id: 2,
+    idReportante: 3,
+    idReportado: 1,       
+    tipo: "publicacion",
+    idReferencia: 1, 
+    razon: "Oferta de trabajo fraudulenta",
+    estado: "pendiente",
+    fecha: new Date()
+  },
+  {
+    _id: 3,
+    idReportante: 4,
+    idReportado: 2,       
+    tipo: "usuario",
+    idReferencia: 2,
+    razon: "Incumplimiento en la entrega del trabajo",
+    estado: "revisado",
+    fecha: new Date()
+  }
+]);
+
+db.HISTORIAL_TRABAJOS.insertMany([
+  {
+    _id: 1,
+    idUsuario: 1,
+    idPublicacion: 1,
+    titulo: "Instalación de lámpara",
+    fechaFinalizacion: ISODate("2025-03-05T17:00:00Z"),
+    calificacion: 5.0,
+    comentarios: "Muy profesional y puntual. Trabajo impecable."
+  },
+  {
+    _id: 2,
+    idUsuario: 2,        
+    idPublicacion: 2, 
+    titulo: "Limpieza de jardín",
+    fechaFinalizacion: ISODate("2025-03-07T11:30:00Z"),
+    calificacion: 4.5,
+    comentarios: "Buen trabajo, pero llegó un poco tarde."
+  },
+  {
+    _id: 3,
+    idUsuario: 3, 
+    idPublicacion: 3,
+    titulo: "Reparación de tubería",
+    fechaFinalizacion: ISODate("2025-03-08T19:15:00Z"),
+    calificacion: 4.8,
+    comentarios: "Excelente servicio, resolvió el problema rápido."
+  }
+]);

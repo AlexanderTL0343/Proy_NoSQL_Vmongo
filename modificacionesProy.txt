@@ -1,0 +1,11 @@
+//------------------------------------------
+
+ESTE TXT TIENE EL PROPOSITO DE ESTE TXT ES ANOTAR LAS PARTES ACTUALIZADAS DE SQL A MONGODB
+
+//------------------------------------------
+Convertidos a mongo :
+User model:
+    -insertarUsuario
+    -obtenerProfesiones 
+
+//------------------------------------------

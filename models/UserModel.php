@@ -1,8 +1,10 @@
 <?php
 session_start();
 require_once '../config/Conexion.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-class User extends Conexion
+
+class User extends ConexionMongo
 {
     protected static $conn;
     private $id;
@@ -192,7 +194,7 @@ class User extends Conexion
 
     public static function getConexion()
     {
-        self::$conn = Conexion::conectar();
+        self::$conn = ConexionMongo::conectar();
     }
 
     public static function desconectar()
@@ -200,36 +202,49 @@ class User extends Conexion
         self::$conn = null;
     }
 
-    public function insertarUsuario()
-    {
-        $SQL = "INSERT INTO USUARIOS(ID_ROL_FK, ID_PROFESION_FK, CEDULA_USUARIO, NOMBRE_USUARIO, APELLIDO1, APELLIDO2, EDAD, DIRECCION, TELEFONO, EMAIL, CONTRASENA, IMAGEN_URL)
-                values (?,?,?,?,?,?,?,?,?,?,?,?)";
+    public function insertarUsuario(){
+    try {
+        // Establece la conexión a MongoDB
+        self::getConexion();
 
-        try {
-            self::getConexion();
-            $res = self::$conn->prepare($SQL);
-            $res->bindParam(1, $this->idRol);
-            $res->bindParam(2, $this->idProfesion);
-            $res->bindParam(3, $this->cedula);
-            $res->bindParam(4, $this->nombre);
-            $res->bindParam(5, $this->apellido1);
-            $res->bindParam(6, $this->apellido2);
-            $res->bindParam(7, $this->edad);
-            $res->bindParam(8, $this->direccion);
-            $res->bindParam(9, $this->telefono);
-            $res->bindParam(10, $this->email);
-            $res->bindParam(11, $this->contrasena);
-            $res->bindParam(12, $this->imagen_url);
+        // Prepara el documento a insertar en MongoDB
+        $usuario = [
+            'id_rol_fk' => $this->idRol,
+            'id_estado_fk' => 1, // Puedes ajustarlo según sea necesario
+            'id_profesion_fk' => $this->idProfesion,
+            'cedulaUsuario' => $this->cedula,
+            'nombreUsuario' => $this->nombre,
+            'apellido1' => $this->apellido1,
+            'apellido2' => $this->apellido2,
+            'edad' => $this->edad,
+            'direccion' => $this->direccion,
+            'telefono' => $this->telefono,
+            'email' => $this->email,
+            'contrasena' => $this->contrasena,
+            'facebook' => '', // Puedes agregar más campos si es necesario
+            'instagram' => '', // Puedes agregar más campos si es necesario
+            'fechaRegistro' => new MongoDB\BSON\UTCDateTime(), // Fecha actual
+            'imagen_url' => $this->imagen_url
+        ];
 
-            $res->execute();
+        // Inserta el documento en la colección "USUARIOS"
+        $result = self::$conn->USUARIOS->insertOne($usuario);
+        
+        // Si la inserción fue exitosa
+        if ($result->getInsertedCount() == 1) {
             self::desconectar();
             return true;
-        } catch (PDOException $Exception) {
-            self::desconectar(); //Esto lo robe del ejemplo crud
-            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
+        } else {
+            self::desconectar();
             return false;
         }
+    } catch (MongoDB\Driver\Exception\Exception $e) {
+        // Captura cualquier error en la conexión o inserción
+        self::desconectar();
+        $error = "Error: " . $e->getMessage();
+        return false;
     }
+}
 
     public function iniciarSesion2($email, $contrasena)
     {
@@ -278,20 +293,26 @@ class User extends Conexion
             return false;
         }
     }
-
+    
     public function obtenerProfesiones()
     {
-        $SQL = "SELECT * FROM PROFESIONES";
         try {
+            // Establece la conexión a MongoDB
             self::getConexion();
-            $res = self::$conn->prepare($SQL);
-            $res->execute();
+    
+            // Consulta a la colección PROFESIONES
+            $profesiones = self::$conn->PROFESIONES->find();
+    
+            // Convierte el cursor de MongoDB a un array
+            $result = iterator_to_array($profesiones);
+    
+            // Desconecta si lo deseas (esto es opcional)
             self::desconectar();
-
-            return $res->fetchAll();
-        } catch (PDOException $Exception) {
+    
+            return $result;  // Devuelve las profesiones en un array
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
             self::desconectar();
-            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
+            $error = "Error: " . $Exception->getMessage();
             return json_encode(["status" => false, "message" => $error]);
         }
     }
@@ -495,28 +516,4 @@ class User extends Conexion
         }
     }
 }
-
-
-
-//codigo para probar que el modelo pinte los datos
-//$usuario = new User();
-//$resultado = $usuario->obtenerUsuariosPorProfesion();
-
-//if (is_array($resultado)) {
-//foreach ($resultado as $fila) {
-// echo "NOMBRE_PROFESION: " . $fila['NOMBRE_PROFESION'] . " - CANTIDAD: " . $fila['CANTIDAD'] . PHP_EOL;
-// }
-//} else {
-//   echo "Error: " . $resultado;
-//}
-
-//$r = new User();
-//$r-> setFacebook("marcos33") ;
-//$r-> setInstagram("marco67");
-//$r-> setId($_SESSION['usuario']['idUsuario']);
-//var_dump($r->getInstagram());
-//var_dump($r->getFacebook());
-//var_dump($r->getId());
-//var_dump($r->getInstagram());
-//var_dump($r->insertarRedes());
 ?>
