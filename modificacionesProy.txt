@@ -3,9 +3,14 @@
 ESTE TXT TIENE EL PROPOSITO DE ESTE TXT ES ANOTAR LAS PARTES ACTUALIZADAS DE SQL A MONGODB
 
 //------------------------------------------
+
+SE MODIFICO LA CLASE CONEXION y el como se usa.
+
 Convertidos a mongo :
 User model:
     -insertarUsuario
     -obtenerProfesiones 
+    -iniciarSesion2
+    
 
 //------------------------------------------

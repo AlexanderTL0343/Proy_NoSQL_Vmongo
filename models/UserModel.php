@@ -24,7 +24,6 @@ class User extends ConexionMongo
     private $fecha_registro;
     private $imagen_url;
 
-
     //Constructor
     public function __construct() {}
 
@@ -190,130 +189,155 @@ class User extends ConexionMongo
         $this->imagen_url = $imagen_url;
     }
 
-    //----------------Métodos-----------------
+    //-----------------------------------------------------------------------------------
 
-    public static function getConexion()
+    public function insertarUsuario()//MONGO HECHO
     {
-        self::$conn = ConexionMongo::conectar();
-    }
-
-    public static function desconectar()
-    {
-        self::$conn = null;
-    }
-
-    public function insertarUsuario(){
-    try {
-        // Establece la conexión a MongoDB
-        self::getConexion();
-
-        // Prepara el documento a insertar en MongoDB
-        $usuario = [
-            'id_rol_fk' => $this->idRol,
-            'id_estado_fk' => 1, // Puedes ajustarlo según sea necesario
-            'id_profesion_fk' => $this->idProfesion,
-            'cedulaUsuario' => $this->cedula,
-            'nombreUsuario' => $this->nombre,
-            'apellido1' => $this->apellido1,
-            'apellido2' => $this->apellido2,
-            'edad' => $this->edad,
-            'direccion' => $this->direccion,
-            'telefono' => $this->telefono,
-            'email' => $this->email,
-            'contrasena' => $this->contrasena,
-            'facebook' => '', // Puedes agregar más campos si es necesario
-            'instagram' => '', // Puedes agregar más campos si es necesario
-            'fechaRegistro' => new MongoDB\BSON\UTCDateTime(), // Fecha actual
-            'imagen_url' => $this->imagen_url
-        ];
-
-        // Inserta el documento en la colección "USUARIOS"
-        $result = self::$conn->USUARIOS->insertOne($usuario);
-        
-        // Si la inserción fue exitosa
-        if ($result->getInsertedCount() == 1) {
-            self::desconectar();
-            return true;
-        } else {
-            self::desconectar();
+        try {
+            // Obtiene la conexión a la base de datos
+            $db = ConexionMongo::obtenerConexion();
+    
+            // Prepara el documento a insertar en MongoDB
+            $usuario = [
+                'id_rol_fk' => $this->idRol,
+                'id_estado_fk' => 1, // Puedes ajustarlo según sea necesario
+                'id_profesion_fk' => $this->idProfesion,
+                'cedulaUsuario' => $this->cedula,
+                'nombreUsuario' => $this->nombre,
+                'apellido1' => $this->apellido1,
+                'apellido2' => $this->apellido2,
+                'edad' => $this->edad,
+                'direccion' => $this->direccion,
+                'telefono' => $this->telefono,
+                'email' => $this->email,
+                'contrasena' => $this->contrasena,
+                'facebook' => '', // Puedes agregar más campos si es necesario
+                'instagram' => '', // Puedes agregar más campos si es necesario
+                'fechaRegistro' => new MongoDB\BSON\UTCDateTime(), // Fecha actual
+                'imagen_url' => $this->imagen_url
+            ];
+    
+            // Inserta el documento en la colección "USUARIOS"
+            $result = $db->USUARIOS->insertOne($usuario);
+            
+            // Si la inserción fue exitosa
+            return $result->getInsertedCount() == 1;
+        } catch (MongoDB\Driver\Exception\Exception $e) {
+            // Captura cualquier error en la conexión o inserción
+            error_log("Error al insertar usuario: " . $e->getMessage());
             return false;
         }
-    } catch (MongoDB\Driver\Exception\Exception $e) {
-        // Captura cualquier error en la conexión o inserción
-        self::desconectar();
-        $error = "Error: " . $e->getMessage();
-        return false;
     }
-}
 
-    public function iniciarSesion2($email, $contrasena)
+    public function iniciarSesion2($email, $contrasena)//MONGO HECHO
     {
-        $SQL = "SELECT ID_USUARIO_PK,NOMBRE_ROL,NOMBRE_ESTADO,NOMBRE_PROFESION,CEDULA_USUARIO,NOMBRE_USUARIO,APELLIDO1,APELLIDO2,
-                EDAD,DIRECCION,TELEFONO,EMAIL,FACEBOOK,INSTAGRAM,FECHA_REGISTRO,IMAGEN_URL 
-                FROM USUARIOS U 
-                INNER JOIN ROLES R  ON U.ID_ROL_FK = R.ID_ROL_PK
-                INNER JOIN ESTADOS E ON U.ID_ESTADO_FK = E.ID_ESTADO_PK
-                INNER JOIN PROFESIONES P ON U.ID_PROFESION_FK = P.ID_PROFESION_PK
-                WHERE EMAIL = ? AND CONTRASENA = ?;";
         try {
-            self::getConexion();
-            $res = self::$conn->prepare($SQL);
-            $res->bindParam(1, $email);
-            $res->bindParam(2, $contrasena);
-            $res->execute();
-            self::desconectar();
-            $res = $res->fetch();
-
-            if ($res) {
-                $_SESSION['usuario'] =
-                    [
-                        'idUsuario' => $res['ID_USUARIO_PK'],
-                        'nombreRol' => $res['NOMBRE_ROL'],
-                        'nombreEstado' => $res['NOMBRE_ESTADO'],
-                        'nombreProfesion' => $res['NOMBRE_PROFESION'],
-                        'cedula' => $res['CEDULA_USUARIO'],
-                        'nombre' => $res['NOMBRE_USUARIO'],
-                        'apellido1' => $res['APELLIDO1'],
-                        'apellido2' => $res['APELLIDO2'],
-                        'edad' => $res['EDAD'],
-                        'direccion' => $res['DIRECCION'],
-                        'telefono' => $res['TELEFONO'],
-                        'email' => $res['EMAIL'],
-                        'facebook' => $res['FACEBOOK'],
-                        'instagram' => $res['INSTAGRAM'],
-                        'fecha_registro' => $res['FECHA_REGISTRO'],
-                        'imagen_url' => $res['IMAGEN_URL']
-                    ];
-                return true;
+            // Obtiene la conexión a MongoDB
+            $db = ConexionMongo::obtenerConexion();
+    
+            // Consulta de agregación
+            $res = $db->USUARIOS->aggregate([
+                ['$match' => ['email' => $email, 'contrasena' => $contrasena]],
+                [
+                    '$lookup' => [
+                        'from' => 'ROLES',
+                        'localField' => 'id_rol_fk',
+                        'foreignField' => '_id',
+                        'as' => 'rol'
+                    ]
+                ],
+                [
+                    '$lookup' => [
+                        'from' => 'ESTADOS',
+                        'localField' => 'id_estado_fk',
+                        'foreignField' => '_id',
+                        'as' => 'estado'
+                    ]
+                ],
+                [
+                    '$lookup' => [
+                        'from' => 'PROFESIONES',
+                        'localField' => 'id_profesion_fk',
+                        'foreignField' => '_id',
+                        'as' => 'profesion'
+                    ]
+                ],
+                ['$unwind' => '$rol'],
+                ['$unwind' => '$estado'],
+                ['$unwind' => '$profesion'],
+                [
+                    '$addFields' => [
+                        'nombre_rol' => '$rol.rol',
+                        'nombre_estado' => '$estado.estado',
+                        'nombre_profesion' => '$profesion.nombreProfesion'
+                    ]
+                ],
+                [
+                    '$project' => [
+                        'rol' => 0,
+                        'estado' => 0,
+                        'profesion' => 0
+                    ]
+                ]
+            ]);
+    
+            // Convierte el resultado a un array
+            $usuario = iterator_to_array($res);
+    
+            // Verifica si hay resultados
+            if (empty($usuario)) {
+                error_log("No se encontró ningún usuario con el email y contraseña proporcionados.");
+                return false;
             }
-            return false;
-        } catch (PDOException $Exception) {
-            self::desconectar(); //Esto lo robe del ejemplo crud
+    
+            // Asignamos los datos a la sesión
+            $_SESSION['usuario'] = [
+                'idUsuario' => $usuario[0]['_id'],
+                'nombreRol' => $usuario[0]['nombre_rol'],
+                'nombreEstado' => $usuario[0]['nombre_estado'],
+                'nombreProfesion' => $usuario[0]['nombre_profesion'],
+                'cedula' => $usuario[0]['cedulaUsuario'],
+                'nombre' => $usuario[0]['nombreUsuario'],
+                'apellido1' => $usuario[0]['apellido1'],
+                'apellido2' => $usuario[0]['apellido2'],
+                'edad' => $usuario[0]['edad'],
+                'direccion' => $usuario[0]['direccion'],
+                'telefono' => $usuario[0]['telefono'],
+                'email' => $usuario[0]['email'],
+                'facebook' => $usuario[0]['facebook'],
+                'instagram' => $usuario[0]['instagram'],
+                'fecha_registro' => $usuario[0]['fechaRegistro'],
+                'imagen_url' => $usuario[0]['imagen_url']
+            ];
+    
+            return true;
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
             error_log("Error " . $Exception->getCode() . ": " . $Exception->getMessage());
             return false;
         }
     }
     
-    public function obtenerProfesiones()
+    
+    public function obtenerProfesiones()//MONGO HECHO
     {
         try {
-            // Establece la conexión a MongoDB
-            self::getConexion();
-    
+            // Crea una nueva instancia de ConexionMongo y obtiene la conexión
+            $db = ConexionMongo::obtenerConexion();
+            
             // Consulta a la colección PROFESIONES
-            $profesiones = self::$conn->PROFESIONES->find();
-    
+            $profesiones = $db->PROFESIONES->find();
+            
             // Convierte el cursor de MongoDB a un array
-            $result = iterator_to_array($profesiones);
+            $profesionesArray = iterator_to_array($profesiones);
     
-            // Desconecta si lo deseas (esto es opcional)
-            self::desconectar();
-    
-            return $result;  // Devuelve las profesiones en un array
-        } catch (MongoDB\Driver\Exception\Exception $Exception) {
-            self::desconectar();
-            $error = "Error: " . $Exception->getMessage();
-            return json_encode(["status" => false, "message" => $error]);
+            return $profesionesArray; // Retorna el array de profesiones
+        } catch (MongoDB\Driver\Exception\Exception $e) {
+            // En caso de error, registrar el error en el log y retornar un mensaje de error
+            error_log("Error al obtener profesiones: " . $e->getMessage());
+            return [
+                "status" => false,
+                "message" => "Error al obtener profesiones."
+            ]; 
         }
     }
 
@@ -339,33 +363,23 @@ class User extends ConexionMongo
         }
     }
 
-    public function verificarExistenciaDb($id)
+    public function verificarExistenciaDb($id)//MONGO HECHO **REVISAR FUNCIONALIDAD**
     {
-        $query = "SELECT * FROM usuarios where ID_USUARIO_PK=?";
         try {
-            self::getConexion();
-            $resultado = self::$conn->prepare($query);
-            //$id= $this->getId();	
-            //$resultado->bindParam(":ID_USUARIO_PK",$id,PDO::PARAM_INT);
-            $resultado->bindParam(1, $id);
-            $resultado->execute();
-            self::desconectar();
-            //var_dump($resultado->fetchAll());
-            $encontrado = false;
-
-
-            $nombre = $resultado->fetch();
-            if ($nombre != null) {
-                $encontrado = true;
-                //var_dump($nombre);
+            // Obtiene la conexión a MongoDB
+            $db = ConexionMongo::obtenerConexion();
+    
+            // Realiza la consulta en la colección "USUARIOS"
+            $resultado = $db->USUARIOS->findOne(['_id' => $id]);//new MongoDB\BSON\ObjectId($id)
+    
+            // Si se encuentra un usuario, retorna true, de lo contrario, false
+            if ($resultado != null) {
+                return true;  // Usuario encontrado
+            } else {
+                return false;  // Usuario no encontrado
             }
-            //foreach ($resultado->fetchAll() as $reg) {
-            //var_dump($encontrado);
-            //$encontrado = true;
-            //}
-            return $encontrado;
-        } catch (PDOException $Exception) {
-            self::desconectar();
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            // Manejo de errores
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return $error;
         }
@@ -373,20 +387,11 @@ class User extends ConexionMongo
 
 
     public function modificarUsuario() {
-        $query = "UPDATE usuarios 
-                  SET NOMBRE_USUARIO = :NOMBRE_USUARIO, 
-                      ID_PROFESION_FK = :ID_PROFESION_FK, 
-                      DIRECCION = :DIRECCION,
-                      TELEFONO = :TELEFONO,  
-                      EMAIL = :EMAIL, 
-                      INSTAGRAM = :INSTAGRAM,
-                      FACEBOOK = :FACEBOOK,
-                      CEDULA_USUARIO = :CEDULA_USUARIO,
-                      IMAGEN_URL = :IMAGEN_URL
-                  WHERE ID_USUARIO_PK = :ID_USUARIO_PK";
-    
         try {
-            self::getConexion();
+            // Obtiene la conexión a MongoDB
+            $db = ConexionMongo::obtenerConexion();
+    
+            // Recoge los valores necesarios para la actualización
             $id = $this->getId();
             $nombre = $this->getNombre();
             $direccion = $this->getDireccion();
@@ -398,39 +403,45 @@ class User extends ConexionMongo
             $imagen_url = $this->getImagenUrl();
             $profesion = $this->getIdProfesion();
     
-            $resultado = self::$conn->prepare($query);
-            $resultado->bindParam(":ID_USUARIO_PK", $id, PDO::PARAM_INT);
-            $resultado->bindParam(":NOMBRE_USUARIO", $nombre, PDO::PARAM_STR);
-            $resultado->bindParam(":DIRECCION", $direccion, PDO::PARAM_STR);
-            $resultado->bindParam(":TELEFONO", $telefono, PDO::PARAM_STR);
-            $resultado->bindParam(":EMAIL", $email, PDO::PARAM_STR);
-            $resultado->bindParam(":INSTAGRAM", $instagram, PDO::PARAM_STR);
-            $resultado->bindParam(":FACEBOOK", $facebook, PDO::PARAM_STR);
-            $resultado->bindParam(":CEDULA_USUARIO", $cedula, PDO::PARAM_INT);
-            $resultado->bindParam(":IMAGEN_URL", $imagen_url, PDO::PARAM_STR);
-            $resultado->bindParam(":ID_PROFESION_FK", $profesion, PDO::PARAM_INT);
+            // Prepara el array de actualización
+            $updateData = [
+                'NOMBRE_USUARIO' => $nombre,
+                'ID_PROFESION_FK' => $profesion, 
+                'DIRECCION' => $direccion,
+                'TELEFONO' => $telefono,
+                'EMAIL' => $email,
+                'INSTAGRAM' => $instagram,
+                'FACEBOOK' => $facebook,
+                'CEDULA_USUARIO' => $cedula,
+                'IMAGEN_URL' => $imagen_url
+            ];
     
-            self::$conn->beginTransaction();
-            $resultado->execute();
-            self::$conn->commit();
-            self::desconectar();
+            // Realiza la actualización en la colección "USUARIOS"
+            $resultado = $db->USUARIOS->updateOne(
+                ['_id' => $id],  // Filtro para encontrar al usuario por su ID
+                ['$set' => $updateData]                     // Datos a actualizar
+            );
     
-            return $resultado->rowCount();
-        } catch (PDOException $Exception) {
-            self::$conn->rollBack();
-            self::desconectar();
+            // Verifica si la actualización fue exitosa
+            if ($resultado->getModifiedCount() > 0) {
+                return $resultado->getModifiedCount();  // Devuelve el número de documentos modificados
+            } else {
+                return 0;  // No se realizaron cambios
+            }
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            // Manejo de errores
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return $error;
         }
     }
-
+    
     
 
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //aqui pintamos los graficos 
-
+/*
     public function obtenerDatosGraficos()
     {
         $SQL = "SELECT count(*) as cantidad, NOMBRE_ROL FROM USUARIOS INNER JOIN ROLES ON USUARIOS.ID_ROL_FK = ROLES.ID_ROL_PK GROUP BY NOMBRE_ROL";
@@ -514,6 +525,6 @@ class User extends ConexionMongo
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return json_encode(["status" => false, "message" => $error]);
         }
-    }
+    }*/
 }
 ?>

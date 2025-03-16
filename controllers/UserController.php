@@ -72,14 +72,13 @@ switch ($_GET['op']) {
         $usuario = new User();
         $res = $usuario->obtenerProfesiones();
 
-        $response = array();
-        $response[] = [
+        $response = [
             "status" => true,
             "message" => "Profesiones obtenidas",
             "datos" => $res
         ];
-
-        echo json_encode($response);
+    
+        echo json_encode([$response]); // Asegúrate de codificar como JSON correctamente
         break;
 
     case 'insertarRedes':

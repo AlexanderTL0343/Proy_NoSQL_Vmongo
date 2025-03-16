@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit78db113070a7e53791843dc838b06f10
+class ComposerStaticInit96b1816b77ae693599b7256f7c1e5342
 {
     public static $files = array (
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
@@ -108,8 +108,8 @@ class ComposerStaticInit78db113070a7e53791843dc838b06f10
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-factory/src',
-            1 => __DIR__ . '/..' . '/psr/http-message/src',
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+            1 => __DIR__ . '/..' . '/psr/http-factory/src',
         ),
         'MongoDB\\' => 
         array (
@@ -143,9 +143,9 @@ class ComposerStaticInit78db113070a7e53791843dc838b06f10
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit78db113070a7e53791843dc838b06f10::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit78db113070a7e53791843dc838b06f10::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit78db113070a7e53791843dc838b06f10::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit96b1816b77ae693599b7256f7c1e5342::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit96b1816b77ae693599b7256f7c1e5342::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit96b1816b77ae693599b7256f7c1e5342::$classMap;
 
         }, null, ClassLoader::class);
     }
