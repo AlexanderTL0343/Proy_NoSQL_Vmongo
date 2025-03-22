@@ -10,8 +10,10 @@ ESTE TXT TIENE EL PROPOSITO DE ESTE TXT ES ANOTAR LAS PARTES ACTUALIZADAS DE SQL
 Convertidos a mongo :
 
 User model:
-
-    -obtenerProfesiones XXXXXX
+    -iniciarSesion 
+    -obtenerProfesiones
+    -registrarUsuario
+    -editarUsuario
 
 
 //------------------------------------------

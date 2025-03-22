@@ -43,34 +43,70 @@ $(document).ready(function () {
   });
 
   $('#editaruser').on('submit', function (event) {
-    event.preventDefault();
-    bootbox.confirm('¿Desea modificar los datos?', function (result) {
-      if (result) {
-        var formData = new FormData($('#editaruser')[0]);
-        $.ajax({
-  
-          url: '../controllers/UserController.php?op=editar',
-          type: 'POST',
-          data: formData,
-          contentType: false,
-          processData: false,
-          success: function (datos) {
-            alert(datos)
-            switch (String(datos)) {
-              case "0":
-                alert('Error al modificar los datos');
-                location.reload();
-                break;
-              case "1":
-                alert('Usuario actualizado exitosamente');
-                location.reload();
-                break;
-              case "2":
-                alert('ID incorrecta');
-                break;
-            }
-          },
-        });
-      }
+    event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
+
+    // Mostrar un cuadro de confirmación con SweetAlert
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Desea modificar los datos?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, modificar',
+        cancelButtonText: 'Cancelar',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Si el usuario confirma, enviar los datos por AJAX
+            var formData = new FormData($('#editaruser')[0]);
+
+            $.ajax({
+                url: '../controllers/UserController.php?op=editar',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (datos) {
+                    // Manejar la respuesta del servidor
+                    switch (String(datos)) {
+                        case "0":
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Error al modificar los datos',
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                location.reload(); // Recargar la página después de cerrar la alerta
+                            });
+                            break;
+                        case "1":
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: 'Usuario actualizado exitosamente',
+                                icon: 'success',
+                                confirmButtonText: 'Aceptar'
+                            }).then(() => {
+                                location.reload(); // Recargar la página después de cerrar la alerta
+                            });
+                            break;
+                        case "2":
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'ID incorrecta',
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar'
+                            });
+                            break;
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Manejar errores de la solicitud AJAX
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un error al enviar la solicitud',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            });
+        }
     });
-  });
+});

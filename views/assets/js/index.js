@@ -19,7 +19,7 @@ function listarProfesiones() {
       //console.log(datos)
       switch (datos.status) {
         case true:
-          console.log(datos.datos);
+          //console.log(datos.datos);
 
           const selectProfesion = document.getElementById("profesion");
           selectProfesion.innerHTML = ""; // Limpiar las opciones existentes

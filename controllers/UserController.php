@@ -109,7 +109,7 @@ switch ($_GET['op']) {
             echo json_encode($response);
         }
         break;
-        case 'editar':
+    case 'editar':
             
             $id = isset($_SESSION['usuario']['idUsuario']) ? $_SESSION['usuario']['idUsuario'] : null;
             if ($id === null) {

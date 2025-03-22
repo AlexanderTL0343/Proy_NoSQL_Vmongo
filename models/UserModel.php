@@ -201,13 +201,10 @@ class User extends ConexionAtlas
 
     //-----------------------------------------------------------------------------------
 
-    public function insertarUsuario()//MONGO HECHO
-    {
+    public function insertarUsuario(){//MONGO HECHO
         try {
             // Obtiene la conexión a la base de datos
-            //$db = ConexionMongo::obtenerConexion();
             $conexion = self::getConexion();
-
 
             // Prepara el documento a insertar en MongoDB
             $usuario = [
@@ -230,7 +227,9 @@ class User extends ConexionAtlas
             ];
     
             // Inserta el documento en la colección "USUARIOS"
-            $result = $conexion->proyectoMongo->USUARIOS->insertOne($usuario);
+            $result = $conexion->USUARIOS->insertOne($usuario);
+
+            //DESCONECTAR DE MONGO
             self::desconectar();
 
             if($result->getInsertedCount() == 1){
@@ -246,14 +245,13 @@ class User extends ConexionAtlas
         }
     }
 
-    public function iniciarSesion2($email, $contrasena)//MONGO HECHO
-    {
+    public function iniciarSesion2($email, $contrasena){//MONGO HECHO
         try {
             // Obtiene la conexión a MongoDB
-            $db = ConexionMongo::obtenerConexion();
+            $conexion = self::getConexion();
     
             // Consulta de agregación
-            $res = $db->USUARIOS->aggregate([
+            $res = $conexion->USUARIOS->aggregate([
                 ['$match' => ['email' => $email, 'contrasena' => $contrasena]],
                 [
                     '$lookup' => [
@@ -298,9 +296,12 @@ class User extends ConexionAtlas
                 ]
             ]);
     
+            //DESCONECTAR DE MONGO
+            self::desconectar();
+
             // Convierte el resultado a un array
             $usuario = iterator_to_array($res);
-    
+            
             // Verifica si hay resultados
             if (empty($usuario)) {
                 error_log("No se encontró ningún usuario con el email y contraseña proporcionados.");
@@ -334,19 +335,18 @@ class User extends ConexionAtlas
         }
     }
     
-    
-    public function obtenerProfesiones()//MONGO HECHO
-    {
+    public function obtenerProfesiones(){//MONGO HECHO
         try {
-            // Crea una nueva instancia de ConexionMongo y obtiene la conexión
+            // Crea una nueva instancia de ConexionMongo y obtiene la conexión a la bsd
             $Conexion = self::getConexion();
             
             // Consulta a la colección PROFESIONES
-            $profesiones = $Conexion->proyectoMongo->PROFESIONES->find();
+            $profesiones = $Conexion->PROFESIONES->find();
             
             // Convierte el cursor de MongoDB a un array
             $profesionesArray = iterator_to_array($profesiones);
 
+            //DESCONECTAR DE MONGO
             self::desconectar();
     
             return $profesionesArray; // Retorna el array de profesiones
@@ -360,8 +360,7 @@ class User extends ConexionAtlas
         }
     }
 
-    public function insertarRedes()
-    {
+    public function insertarRedes(){
         $SQL = "UPDATE USUARIOS SET INSTAGRAM = ?, FACEBOOK = ? WHERE ID_USUARIO_PK = ?";
 
         try {
@@ -386,10 +385,10 @@ class User extends ConexionAtlas
     {
         try {
             // Obtiene la conexión a MongoDB
-            $db = ConexionMongo::obtenerConexion();
+            $Conexion = ConexionAtlas::obtenerConexion();
     
             // Realiza la consulta en la colección "USUARIOS"
-            $resultado = $db->USUARIOS->findOne(['_id' => $id]);//new MongoDB\BSON\ObjectId($id)
+            $resultado = $Conexion->USUARIOS->findOne(['_id' => $id]);
     
             // Si se encuentra un usuario, retorna true, de lo contrario, false
             if ($resultado != null) {
@@ -398,7 +397,6 @@ class User extends ConexionAtlas
                 return false;  // Usuario no encontrado
             }
         } catch (MongoDB\Driver\Exception\Exception $Exception) {
-            // Manejo de errores
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return $error;
         }
@@ -408,7 +406,7 @@ class User extends ConexionAtlas
     public function modificarUsuario() {
         try {
             // Obtiene la conexión a MongoDB
-            $db = ConexionMongo::obtenerConexion();
+            $Conexion = ConexionAtlas::obtenerConexion();
     
             // Recoge los valores necesarios para la actualización
             $id = $this->getId();
@@ -420,23 +418,23 @@ class User extends ConexionAtlas
             $facebook = $this->getFacebook();
             $cedula = $this->getCedula();
             $imagen_url = $this->getImagenUrl();
-            $profesion = $this->getIdProfesion();
+            $profesion = (int) $this->getIdProfesion();
     
-            // Prepara el array de actualización
+            // Prepara el array de actualización con los nombres correctos
             $updateData = [
-                'NOMBRE_USUARIO' => $nombre,
-                'ID_PROFESION_FK' => $profesion, 
-                'DIRECCION' => $direccion,
-                'TELEFONO' => $telefono,
-                'EMAIL' => $email,
-                'INSTAGRAM' => $instagram,
-                'FACEBOOK' => $facebook,
-                'CEDULA_USUARIO' => $cedula,
-                'IMAGEN_URL' => $imagen_url
+                'nombreUsuario' => $nombre,          
+                'direccion' => $direccion,           
+                'telefono' => $telefono,             
+                'email' => $email,                  
+                'instagram' => $instagram,           
+                'facebook' => $facebook,            
+                'cedulaUsuario' => $cedula,          
+                'imagen_url' => $imagen_url,         
+                'id_profesion_fk' => $profesion     
             ];
     
             // Realiza la actualización en la colección "USUARIOS"
-            $resultado = $db->USUARIOS->updateOne(
+            $resultado = $Conexion->USUARIOS->updateOne(
                 ['_id' => $id],  // Filtro para encontrar al usuario por su ID
                 ['$set' => $updateData]                     // Datos a actualizar
             );
@@ -455,9 +453,6 @@ class User extends ConexionAtlas
     }
     
     
-
-
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //aqui pintamos los graficos 
 /*
