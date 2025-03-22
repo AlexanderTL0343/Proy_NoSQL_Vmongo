@@ -14,15 +14,17 @@ function listarProfesiones() {
     url: "../controllers/UserController.php?op=obtenerProfesiones",
     type: "GET",
     success: function (datos) {
+      
       datos = JSON.parse(datos);
-      switch (datos[0].status) {
+      //console.log(datos)
+      switch (datos.status) {
         case true:
-          //console.log(datos[0].datos);
+          console.log(datos.datos);
 
           const selectProfesion = document.getElementById("profesion");
           selectProfesion.innerHTML = ""; // Limpiar las opciones existentes
           
-          datos[0].datos.forEach(profesion => {
+          datos.datos.forEach(profesion => {
             const opt = document.createElement("option"); //crear el option
             opt.value = profesion._id; // Asigna el valor del campo _id
             opt.text = profesion.nombreProfesion; // Asigna el texto del campo nombreProfesion

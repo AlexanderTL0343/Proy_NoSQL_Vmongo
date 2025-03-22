@@ -1,12 +1,11 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/conexionAtlas.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
-class User extends ConexionMongo
+class User extends ConexionAtlas
 {
-    protected static $conn;
     private $id;
     private $idRol;
     private $idProfesion;
@@ -188,6 +187,17 @@ class User extends ConexionMongo
     {
         $this->imagen_url = $imagen_url;
     }
+    //----------------------------------------------------------------------------------
+
+    public static function getConexion()
+    {
+        return ConexionAtlas::obtenerConexion();
+    }
+
+    public static function desconectar()
+    {
+        ConexionAtlas::desconectar();
+    }
 
     //-----------------------------------------------------------------------------------
 
@@ -195,8 +205,10 @@ class User extends ConexionMongo
     {
         try {
             // Obtiene la conexión a la base de datos
-            $db = ConexionMongo::obtenerConexion();
-    
+            //$db = ConexionMongo::obtenerConexion();
+            $conexion = self::getConexion();
+
+
             // Prepara el documento a insertar en MongoDB
             $usuario = [
                 'id_rol_fk' => $this->idRol,
@@ -218,10 +230,15 @@ class User extends ConexionMongo
             ];
     
             // Inserta el documento en la colección "USUARIOS"
-            $result = $db->USUARIOS->insertOne($usuario);
-            
-            // Si la inserción fue exitosa
-            return $result->getInsertedCount() == 1;
+            $result = $conexion->proyectoMongo->USUARIOS->insertOne($usuario);
+            self::desconectar();
+
+            if($result->getInsertedCount() == 1){
+                return true;
+            }else{
+                return false;
+            }
+
         } catch (MongoDB\Driver\Exception\Exception $e) {
             // Captura cualquier error en la conexión o inserción
             error_log("Error al insertar usuario: " . $e->getMessage());
@@ -322,13 +339,15 @@ class User extends ConexionMongo
     {
         try {
             // Crea una nueva instancia de ConexionMongo y obtiene la conexión
-            $db = ConexionMongo::obtenerConexion();
+            $Conexion = self::getConexion();
             
             // Consulta a la colección PROFESIONES
-            $profesiones = $db->PROFESIONES->find();
+            $profesiones = $Conexion->proyectoMongo->PROFESIONES->find();
             
             // Convierte el cursor de MongoDB a un array
             $profesionesArray = iterator_to_array($profesiones);
+
+            self::desconectar();
     
             return $profesionesArray; // Retorna el array de profesiones
         } catch (MongoDB\Driver\Exception\Exception $e) {

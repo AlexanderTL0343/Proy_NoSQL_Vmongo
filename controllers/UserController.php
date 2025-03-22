@@ -78,7 +78,7 @@ switch ($_GET['op']) {
             "datos" => $res
         ];
     
-        echo json_encode([$response]); // Asegúrate de codificar como JSON correctamente
+        echo json_encode($response); // Asegúrate de codificar como JSON correctamente
         break;
 
     case 'insertarRedes':

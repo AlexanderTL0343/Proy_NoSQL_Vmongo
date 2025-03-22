@@ -4,13 +4,14 @@ ESTE TXT TIENE EL PROPOSITO DE ESTE TXT ES ANOTAR LAS PARTES ACTUALIZADAS DE SQL
 
 //------------------------------------------
 
-SE MODIFICO LA CLASE CONEXION y el como se usa.
+*** SE CAMBIO A MONGO ATLAS *** QUEDA PASAR DE NUEVO LO ANTERIOR
+
 
 Convertidos a mongo :
+
 User model:
-    -insertarUsuario
-    -obtenerProfesiones 
-    -iniciarSesion2
-    
+
+    -obtenerProfesiones XXXXXX
+
 
 //------------------------------------------

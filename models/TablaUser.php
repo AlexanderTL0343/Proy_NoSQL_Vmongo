@@ -2,10 +2,9 @@
 session_start();
 require_once '../config/Conexion.php';
 
-class TablaUser extends Conexion
+class TablaUser extends ConexionAtlas
 {
-
-    protected static $cnx;
+    protected static $conn;
     private $id;
     private $idRol;
     private $cedula;
@@ -25,18 +24,6 @@ class TablaUser extends Conexion
     private $imagen_url;
 
     public function __construct() {}
-
-    //Metodos de conexion y desconexion 
-
-    public static function getConexion()
-    {
-        self::$cnx = Conexion::conectar();
-    }
-
-    public static function desconectar()
-    {
-        self::$cnx = null;
-    }
 
     // metodos set y get 
 
@@ -127,8 +114,6 @@ class TablaUser extends Conexion
 
     //----------------Setters-----------------
 
-
-
     public function setId($id)
     {
         $this->id = $id;
@@ -213,43 +198,113 @@ class TablaUser extends Conexion
     {
         $this->estado = $estado;
     }
+//-----------------------------------------------------------------------------------
+    public static function getConexion()
+    {
+        self::$cnx = Conexion::conectar();
+    }
+
+    public static function desconectar()
+    {
+        self::$cnx = null;
+    }
 
     //funcion para listar la tabla de los usuarios 
 
     public function listarTablaUser()
     {
-        $query = "SELECT u.ID_USUARIO_PK, u.NOMBRE_USUARIO, u.EDAD, u.EMAIL, p.NOMBRE_PROFESION, u.FECHA_REGISTRO, r.NOMBRE_ROL, e.NOMBRE_ESTADO
-          FROM usuarios u 
-          JOIN roles r ON u.ID_ROL_FK = r.ID_ROL_PK 
-          JOIN profesiones p ON u.ID_PROFESION_FK = p.ID_PROFESION_PK
-          JOIN estados e  ON u.ID_ESTADO_FK = e.ID_ESTADO_PK";
-
+        // Arreglo para almacenar los resultados
         $arr = array();
         try {
-            self::getConexion();
-
-            $resultado = self::$cnx->prepare($query);
-            $resultado->execute();
-            self::desconectar();
-            foreach ($resultado->fetchAll() as $encontrado) {
+            // Obtener conexión a MongoDB
+            $db = ConexionMongo::obtenerConexion();
+    
+            // Realizar la agregación en MongoDB
+            $res = $db->USUARIOS->aggregate([
+                // Filtrar los usuarios (si necesitas algo específico, por ejemplo, usuarios activos)
+                ['$match' => []],  // Aquí puedes agregar filtros si los necesitas
+    
+                // Realizar el "lookup" para obtener los datos de roles
+                [
+                    '$lookup' => [
+                        'from' => 'ROLES',  // Nombre de la colección de roles
+                        'localField' => 'ID_ROL_FK',  // Campo de usuarios
+                        'foreignField' => '_id',  // Campo de roles (asegúrate de que sea el ObjectId si es necesario)
+                        'as' => 'rol'
+                    ]
+                ],
+                
+                // Realizar el "lookup" para obtener los datos de profesiones
+                [
+                    '$lookup' => [
+                        'from' => 'PROFESIONES',  // Nombre de la colección de profesiones
+                        'localField' => 'ID_PROFESION_FK',
+                        'foreignField' => '_id',
+                        'as' => 'profesion'
+                    ]
+                ],
+                
+                // Realizar el "lookup" para obtener los datos de estados
+                [
+                    '$lookup' => [
+                        'from' => 'ESTADOS',  // Nombre de la colección de estados
+                        'localField' => 'ID_ESTADO_FK',
+                        'foreignField' => '_id',
+                        'as' => 'estado'
+                    ]
+                ],
+    
+                // Desenrollar los arrays de cada "lookup" para obtener solo el primer elemento
+                ['$unwind' => '$rol'],
+                ['$unwind' => '$profesion'],
+                ['$unwind' => '$estado'],
+    
+                // Agregar campos adicionales para hacer más sencillo el acceso
+                [
+                    '$addFields' => [
+                        'nombre_rol' => '$rol.NOMBRE_ROL',
+                        'nombre_profesion' => '$profesion.NOMBRE_PROFESION',
+                        'nombre_estado' => '$estado.NOMBRE_ESTADO',
+                    ]
+                ],
+    
+                // Proyectar solo los campos que quieres devolver
+                [
+                    '$project' => [
+                        'ID_USUARIO_PK' => 1,
+                        'NOMBRE_USUARIO' => 1,
+                        'EDAD' => 1,
+                        'EMAIL' => 1,
+                        'nombre_profesion' => 1,
+                        'FECHA_REGISTRO' => 1,
+                        'nombre_rol' => 1,
+                        'nombre_estado' => 1
+                    ]
+                ]
+            ]);
+    
+            // Recorrer los resultados y mapearlos a objetos
+            foreach ($res as $encontrado) {
                 $client = new TablaUser();
                 $client->setId($encontrado['ID_USUARIO_PK']);
                 $client->setNombre($encontrado['NOMBRE_USUARIO']);
                 $client->setEdad($encontrado['EDAD']);
                 $client->setEmail($encontrado['EMAIL']);
-                $client->setProfesion($encontrado['NOMBRE_PROFESION']);
+                $client->setProfesion($encontrado['nombre_profesion']);
                 $client->setFechaRegistro($encontrado['FECHA_REGISTRO']);
-                $client->setIdRol($encontrado['NOMBRE_ROL']);
-                $client->setEstado($encontrado['NOMBRE_ESTADO']);
+                $client->setIdRol($encontrado['nombre_rol']);
+                $client->setEstado($encontrado['nombre_estado']);
                 $arr[] = $client;
             }
+            print_r($arr);
             return $arr;
-        } catch (PDOException $Exception) {
-            self::desconectar();
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            // Manejo de errores
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return json_encode($error);
         }
     }
+    
 
 
     public function verificarExistenciaDb($id)
