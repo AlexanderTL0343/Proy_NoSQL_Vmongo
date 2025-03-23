@@ -1,136 +1,325 @@
-/*document.getElementById("submitJob").addEventListener("click", function () {
-  const jobTitle = document.getElementById("jobTitle").value;
-  const jobDescription = document.getElementById("jobDescription").value;
-  const jobPrice = document.getElementById("jobPrice").value;
+$(document).ready(function () {
+    cargarCategorias();
+    cargarPublicaciones();
 
-  if (jobTitle && jobDescription && jobPrice) {
-    // Crear una nueva tarjeta con la información del trabajo
-    const newJobCard = document.createElement("div");
-    newJobCard.classList.add("col", "mb-5");
-    newJobCard.setAttribute("data-category", "nueva-postulacion"); // Puedes cambiar esto según sea necesario
-    newJobCard.innerHTML = `
-<div class="card h-100">
-    <div class="card-body p-4">
-        <div class="text-center">
-            <h5 class="fw-bolder">${jobTitle}</h5>
-            <p>${jobDescription}</p>
-            <p>$${jobPrice}</p>
-        </div>
-    </div>
-    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-        <div class="text-center">
-            <a class="btn btn-outline-dark mt-auto" href="#" data-bs-toggle="modal" data-bs-target="#applicationModal">Ver empleo</a>
-        </div>
-    </div>
-</div>
-`;
-
-    // Agregar la nueva tarjeta al contenedor de trabajos
-    document.getElementById("jobContainer").appendChild(newJobCard);
-
-    // Limpiar los campos del formulario
-    document.getElementById("postJobForm").reset();
-
-    // Cerrar el modal
-    const modal = bootstrap.Modal.getInstance(
-      document.getElementById("postJobModal")
-    );
-    modal.hide();
-  } else {
-    alert("Por favor, completa todos los campos.");
-  }
+    //$("#updateJob").click(actualizarPublicacion);
+    //$("#submitApplication").click(enviarPostulacion);
 });
 
-document
-  .getElementById("submitApplication")
-  .addEventListener("click", function () {
-    // Obtener los valores de los campos
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const message = document.getElementById("message").value;
+// Cargar categorías en el filtro
+function cargarCategorias() {
+    $.ajax({
+        url: "../controllers/publicacionController.php?op=listarCategorias",
+        type: "GET",
+        success: function (response) {
+            response = JSON.parse(response);
 
-    // Validar que los campos no estén vacíos
-    if (name && email && message) {
-      // Mostrar el mensaje de éxito
-      const responseMessage = document.getElementById("responseMessage");
-      responseMessage.style.display = "block";
-      responseMessage.innerText = "¡Postulación enviada con éxito!";
-
-      // Limpiar los campos del formulario
-      document.getElementById("applicationForm").reset();
-    } else {
-      // Mostrar un mensaje de error si los campos están vacíos
-      const responseMessage = document.getElementById("responseMessage");
-      responseMessage.style.display = "block";
-      responseMessage.classList.remove("alert-success");
-      responseMessage.classList.add("alert-danger");
-      responseMessage.innerText = "Por favor, completa todos los campos.";
-    }
-  });*/
-
-  function filterProducts() {
-    const filterValue = document.getElementById("categoryFilter").value;
-    const products = document.querySelectorAll(".col");
-  
-    products.forEach((product) => {
-      if (
-        filterValue === "all" ||
-        product.getAttribute("data-category") === filterValue
-      ) {
-        product.style.display = "block"; // Muestra el producto
-      } else {
-        product.style.display = "none"; // Oculta el producto
-      }
+            if (response.status) {
+                let opciones = '<option value="all">Todas</option>';
+                response.datos.forEach((categoria) => {
+                    opciones += `<option value="${categoria._id}">${categoria.nombreCategoria}</option>`;
+                });
+                $("#categoryFilter").html(opciones);
+                $("#form-p-categoria").html(opciones);
+                $("#edit_categoria").html(opciones);
+            }
+        },
+        error: function () {
+            console.error("Error al obtener las categorias.");
+        },
     });
-  }
-  //----------------------------------------------------------------------------------------------------------------
-  //BRANDON
-  
-  function listarTrasActualizar() {
-    var metodo = "listarPublicaciones($publicaciones);";
-  }
-  
-  function limpiarFormAgregar(){
-      document.getElementById("titulo").value = "";
-      document.getElementById("descripcion").value = "";
-      document.getElementById("categoriaPublicacionSelect").value = "";
-      document.getElementById("ubicacion").value = "";
-      document.getElementById("precio").value = "";   
-  }
-  
-  //metodo para insertar una nueva publicacion
-  document.getElementById("subirTrabajo").addEventListener("click", function (e) {
-      e.preventDefault();
-      var formData = new FormData($("#formPostularTrabajo")[0]);
-      $.ajax({
-        url: "../controllers/publicacionController.php?op=insertarPublicacion",
+}
+
+// Cargar publicaciones dinámicamente
+function cargarPublicaciones() {
+    $.ajax({
+        url: "../controllers/publicacionController.php?op=listarPublicaciones",
+        type: "GET",
+        success: function (response) {
+            response = JSON.parse(response);
+            if (response.status) {
+                let html = response.datos.map(generarCard).join("");
+                $("#listaPublicaciones").html(html);
+            } else {
+                $("#listaPublicaciones").html(
+                    "<p>No hay publicaciones disponibles.</p>"
+                );
+            }
+        },
+        error: function () {
+            console.error("Error al obtener publicaciones.");
+        },
+    });
+}
+
+// Generar una tarjeta de publicación
+function generarCard(publicacion) {
+    let nombreRol = document.getElementById("nombreRol").getAttribute("data-value");
+    return `
+      <li class="nav-item" data-category="${publicacion.id_categoria_fk}">
+          <div class="col mb-5"">
+              <div class="card h-100">
+                  <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                  <div class="card-body p-4">
+                      <div class="text-center">
+                          <h5 class="fw-bolder">${publicacion.titulo_publicacion}</h5>
+                          <p class="text-muted">${publicacion.precio_aprox} ₡</p>
+                      </div>
+                </div>
+                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                        <div class="d-flex justify-content-between gap-2">
+                            <!-- Botón de Ver Empleo -->
+                            <a class="btn btn-outline-primary flex-fill" href="#" data-bs-toggle="modal" data-bs-target="#applicationModal">Ver</a>
+                                
+                            ${nombreRol === "RECLUTADOR" || nombreRol === "ADMIN" ? `
+                                <!-- Botón de Editar -->
+                                <a class="btn btn-outline-primary flex-fill" href="#" onclick="editPublication(${publicacion._id})" data-bs-toggle="modal" data-bs-target="#editJobModal">Editar</a>
+                            ` : ""}
+                            
+                            ${nombreRol === "RECLUTADOR" || nombreRol === "ADMIN" ? `
+                                <!-- Botón de Eliminar -->
+                                <button class="btn btn-outline-danger flex-fill" onclick="eliminarPublicacion('${publicacion._id}')">Eliminar</button>
+                            ` : ""}
+                        </div>
+                    </div>
+              </div>
+          </div>
+      </li>
+  `;
+}
+
+// Filtrar publicaciones por categoría
+function filterProducts() {
+    let selectedCategory = $("#categoryFilter").val();
+    $("#listaPublicaciones li").each(function () {
+        let category = $(this).data("category"); // Ahora sí debería funcionar
+        $(this).toggle(selectedCategory === "all" || String(category) === String(selectedCategory));
+    });
+}
+
+// Subir una nueva publicación
+$(document).ready(function () {
+    $("#submitPublication").on("click", function (e) {
+        e.preventDefault();
+        console.log("El botón de 'Subir' ha sido presionado.");
+
+        var formData = new FormData($("#formAddPublication")[0]);
+        $.ajax({
+            url: "../controllers/publicacionController.php?op=insertarPublicacion",
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                response = JSON.parse(response);
+                switch (response.status) {
+                    case true:
+                        Swal.fire({
+                            icon: "success",
+                            title: "Publicación creada exitosamente",
+                            text: "¡Gracias por compartir tu trabajo!",
+                            showConfirmButton: false,
+                            timer: 1800,
+                        }).then(() => {
+                            // Redirigir después de que el cuadro desaparezca
+                            window.location.href = "main.php";
+                        });
+                        break;
+
+                    case false:
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error al crear la publicación",
+                            text: "Revisa los errores y vuelve a intentarlo.",
+                            showConfirmButton: false,
+                            timer: 1800,
+                        });
+                        break;
+                }
+            },
+            error: function (err) {
+                console.error("Error en la solicitud AJAX:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al crear la publicación",
+                    text: "Revisa los errores y vuelve a intentarlo.",
+                    showConfirmButton: false,
+                    timer: 1800,
+                });
+            },
+        });
+    });
+});
+
+
+function limpiarFormularioEdicion() {
+    $("#edit_titulo_publicacion").val(" ");
+    $("#edit_categoria").val(" ");
+    $("#edit_descripcion").val(" ");
+    $("#edit_precio_aprox").val(" ");
+    $("#edit_provincia").val(" ");
+    $("#edit_ciudad").val(" ");
+    $("#edit_direccion").val(" ");
+    $("#edit_imagen_url").val(" ");
+    $("#edit_id_publicacion").val(" ");
+}
+
+// Actualizar publicación
+// Función para editar una publicación
+function editPublication(id) {
+    console.log(id);
+    limpiarFormularioEdicion();  // Limpiar el formulario antes de cargar la publicación
+    $.ajax({
+        url: "../controllers/publicacionController.php?op=obtenerPublicacion",
+        type: "GET",
+        data: { id: id },
+        success: function (response) {
+            response = JSON.parse(response);
+            if (response.status) {
+                const pub = response.datos;
+
+                // Poblamos los campos del modal con los datos de la publicación
+                $("#edit_titulo_publicacion").val(pub.titulo_publicacion);
+                $("#edit_categoria").val(pub.id_categoria_fk);
+                $("#edit_descripcion").val(pub.descripcion);
+                $("#edit_precio_aprox").val(pub.precio_aprox);
+                $("#edit_provincia").val(pub.provincia);
+                $("#edit_ciudad").val(pub.ciudad);
+                $("#edit_direccion").val(pub.direccion);
+                $("#edit_imagen_url").val(pub.imagen_url);
+                $("#edit_id_publicacion").val(pub._id);
+
+                cargarCategorias();
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al obtener los datos",
+                    text: "No se pudo cargar la publicación para editarla.",
+                });
+            }
+        },
+        error: function () {
+            console.error("Error al obtener la publicación.");
+        },
+    });
+}
+
+/*
+// Función para actualizar la publicación
+$("#updateJob").click(function (e) {
+    e.preventDefault();
+
+
+    const formData = new FormData($("#formEditJob")[0]);
+    $.ajax({
+        url: "../controllers/publicacionController.php?op=actualizarPublicacion",
         type: "POST",
         data: formData,
-        processData: false, // Necesario para enviar FormData
-        contentType: false, // Necesario para enviar FormData
-        success: function (data) {
-          data = JSON.parse(data);
-  
-          switch (data[0].status) {
-            case true:
-              Swal.fire({
-                icon: "success",
-                title: "Publicación creada exitosamente",
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            response = JSON.parse(response);
+            if (response.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Publicación actualizada exitosamente",
+                    showConfirmButton: false,
+                    timer: 1800,
+                }).then(() => {
+                    // Redirigir o recargar para mostrar la publicación actualizada
+                    window.location.href = "main.php";
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error al actualizar la publicación",
+                    text: "Revisa los errores y vuelve a intentarlo.",
+                    showConfirmButton: false,
+                    timer: 1800,
+                });
+            }
+        },
+        error: function (err) {
+            console.error("Error en la solicitud AJAX:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Error al actualizar la publicación",
+                text: "Revisa los errores y vuelve a intentarlo.",
                 showConfirmButton: false,
                 timer: 1800,
-              }).then(() => {
-                document.getElementById("formPostularTrabajo").reset()});
-                $('#postJobModal').modal('hide')
-              break;
-              case false:
-                Swal.fire({
-                  icon: "error",
-                  title: "Error al crear la publicación",
-                  showConfirmButton: false,
-                  timer: 1800,
-                });
-              break;
-          }
+            });
         },
-      });
     });
+});
+
+*/
+
+// Eliminar publicación
+function eliminarPublicacion(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Desea eliminar esta publicación?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "../controllers/publicacionController.php?op=eliminarPublicacion",
+                type: "POST",
+                data: {id: id,},
+                success: function (response) {
+                    response = JSON.parse(response);
+                    switch (response.status) {
+                        case true:
+                            Swal.fire({
+                                icon: "success",
+                                title: "Publicación eliminada exitosamente",
+                                showConfirmButton: false,
+                                timer: 1800,
+                            }).then(() => {
+                                // Redirigir después de que el cuadro desaparezca
+                                window.location.href = "main.php";
+                            });
+                            break;
+
+                        case false:
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error al eliminar la publicación",
+                                text: "Revisa los errores y vuelve a intentarlo.",
+                                showConfirmButton: false,
+                                timer: 1800,
+                            });
+                            break;
+                    }
+                },
+                error: function (err) {
+                    console.error("Error en la solicitud AJAX:", err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error al eliminar la publicación",
+                        text: "Revisa los errores y vuelve a intentarlo.",
+                        showConfirmButton: false,
+                        timer: 1800,
+                    });
+                },
+            });
+        }
+    });
+}
+
+// Enviar postulación
+function enviarPostulacion() {
+    let formData = $("#applicationForm").serialize();
+    $.post(
+        "../controllers/publicacionController.php",
+        formData + "&action=enviarPostulacion"
+    )
+        .done(() => {
+            alert("Postulación enviada.");
+            $("#applicationModal").modal("hide");
+        })
+        .fail(() => alert("Error al enviar la postulación."));
+}

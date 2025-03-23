@@ -1,9 +1,11 @@
 <?php
-    require_once '../config/Conexion.php';
+require_once '../config/conexionAtlas.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-    class publicacion extends Conexion{
+
+    class publicacion extends ConexionAtlas
+    {
         //atributos
-        protected static $conn;
         private $idPublicacion;
         private $idEstado;
         private $idCategoria;
@@ -12,8 +14,11 @@
         private $descripcion;
         private $fechaPublicacion;
         private $idUsuario;
-        private $ubicacion;
+        private $ciudad;
+        private $provincia;
+        private $direccion;
         private $precioAprox;
+        private $imagenUrl;
 
         //Constructor
         public function __construct(){}
@@ -43,12 +48,21 @@
         public function getIdUsuario(){
             return $this->idUsuario;
         }
-        public function getUbicacion(){
-            return $this->ubicacion;
-        }
         public function getPrecioAprox(){
             return $this->precioAprox;
         }   
+        public function getCiudad(){
+            return $this->ciudad;
+        }
+        public function getProvincia(){
+            return $this->provincia;
+        }
+        public function getDireccion(){
+            return $this->direccion;
+        }
+        public function getImagenUrl(){
+            return $this->imagenUrl;
+        }
         //setters
         public function setIdPublicacion($idPublicacion){
             $this->idPublicacion = $idPublicacion;
@@ -74,73 +88,175 @@
         public function setIdUsuario($idUsuario){
             $this->idUsuario = $idUsuario;
         }
-        public function setUbicacion($ubicacion){
-            $this->ubicacion = $ubicacion;
-        }
         public function setPrecioAprox($precioAprox){
             $this->precioAprox = $precioAprox;
         }
-        
-        //Metodos de conexion y desconexion 
-
-        public static function getConexion(){
-            self::$conn = Conexion::conectar();
+        public function setCiudad($ciudad){
+            $this->ciudad = $ciudad;
         }
-        public static function desconectar(){
-            self::$conn = null;
+        public function setProvincia($provincia){
+            $this->provincia = $provincia;
+        }
+        public function setDireccion($direccion){
+            $this->direccion = $direccion;
+        }
+        public function setImagenUrl($imagenUrl){
+            $this->imagenUrl = $imagenUrl;
+        }
+        
+        //---------------------------------------------------------------------------
+
+        public static function getConexion()
+        {
+            return ConexionAtlas::obtenerConexion();
+        }
+    
+        public static function desconectar()
+        {
+            ConexionAtlas::desconectar();
         }
         //----------------Métodos-----------------
 
         public function insertarPublicacion(){
-            $SQL = "INSERT INTO PUBLICACIONES(ID_CATEGORIA_FK, TITULO_PUBLICACION, DESCRIPCION, ID_USUARIO_FK, UBICACION, PRECIO_APROX)
-                    values (?,?,?,?,?,?)";
+
             try {
-                self::getConexion();
-                $res = self::$conn->prepare($SQL);
-                $res->bindParam(1, $this->idCategoria);
-                $res->bindParam(2, $this->tituloPublicacion);
-                $res->bindParam(3, $this->descripcion);
-                $res->bindParam(4, $this->idUsuario);
-                $res->bindParam(5, $this->ubicacion);
-                $res->bindParam(6, $this->precioAprox);
-                $res->execute();
+                // Obtiene la conexión a la base de datos
+                $conexion = self::getConexion();
+
+                $publicacion = [
+                    //el id se agrega solo, no en formato numerico pero se agrega XD
+                    'id_estado_fk' => $this->idEstado,
+                    'id_categoria_fk' => $this->idCategoria, 
+                    'id_usuario_fk' => $this->idUsuario, 
+                    'titulo_publicacion' => $this->tituloPublicacion, 
+                    'descripcion' => $this->descripcion, 
+                    'fecha_publicacion'=> new MongoDB\BSON\UTCDateTime(),
+                    'imagen_url' => $this->imagenUrl, 
+                    'precio_aprox' => $this->precioAprox, 
+                    'ubicacion' => [
+                        'ciudad' => $this->ciudad,                       // Ciudad
+                        'provincia' => $this->provincia,                 // Provincia
+                        'direccion_detallada' => $this->direccion       // Dirección detallada
+                    ],
+                    'calificaciones' => []    
+                ];
+
+                $res = $conexion->PUBLICACIONES->insertOne($publicacion);
+
                 self::desconectar();
-                return true;
-            } catch (PDOException $Exception) {
-                self::desconectar(); //Esto lo robe del ejemplo crud
-                $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-                error_log($error); // Log del error
+
+                if($res->getInsertedCount() == 1){
+                    return true;
+                }else{
+                    return false;
+                }
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al insertar usuario: " . $e->getMessage());
                 return false;
             }
-        }
+        }      
 
-        public function listarPublicaciones(){
-            $SQL = "SELECT * FROM PUBLICACIONES";
+        public function listarPublicaciones(){//MONGO HECHO
+            
             try {
-                self::getConexion();
-                $res = self::$conn->prepare($SQL);
-                $res->execute();
+                $Conexion = self::getConexion();
+
+                $res = $Conexion->PUBLICACIONES->find();
+
                 self::desconectar();
-                return $res->fetchAll();
-            } catch (PDOException $Exception) {
-                self::desconectar();
-                $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-                return json_encode(["status" => false, "message" => $error]);
+
+                $publicaciones = iterator_to_array($res);
+
+                foreach ($publicaciones as $publicacion) { //convertir de OBJECT ID a STRING
+                    $publicacion['_id'] = (string) $publicacion['_id'];
+                }
+
+                return $publicaciones;
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // En caso de error, registrar el error en el log y retornar un mensaje de error
+                error_log("Error al obtener profesiones: " . $e->getMessage());
+                return [
+                    "status" => false,
+                    "message" => "Error al obtener profesiones."
+                ]; 
             }
         }
 
         public function listarCategorias(){
-            $SQL = "SELECT * FROM CATEGORIAS";
+
             try {
-                self::getConexion();
-                $res = self::$conn->prepare($SQL);
-                $res->execute();
+                $Conexion = self::getConexion();
+                $res = $Conexion->CATEGORIAS->find();
                 self::desconectar();
-                return $res->fetchAll();
-            } catch (PDOException $Exception) {
+
+                $categorias = iterator_to_array($res);
+
+                return $categorias;                         
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // En caso de error, registrar el error en el log y retornar un mensaje de error
+                error_log("Error al obtener profesiones: " . $e->getMessage());
+                return [
+                    "status" => false,
+                    "message" => "Error al obtener profesiones."
+                ]; 
+            }
+        }
+
+        public function eliminarPublicacion($id){
+            try {
+                $Conexion = self::getConexion();
+
+                // Verificar si el id es un número o un ObjectId
+                if (is_numeric($id)) {
+                    // Si el id es un número, usarlo directamente
+                    $res = $Conexion->PUBLICACIONES->deleteOne(['_id' => (int)$id]);
+                } else {
+                    // Si el id no es numérico, convertirlo a ObjectId
+                    $objectId = new \MongoDB\BSON\ObjectId($id);
+                    $res = $Conexion->PUBLICACIONES->deleteOne(['_id' => $objectId]);
+                }
+
                 self::desconectar();
-                $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-                return json_encode(["status" => false, "message" => $error]);
+
+                if($res->getDeletedCount() == 1){
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al eliminar usuario: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function obtenerPublicacion($id){
+            try {
+                $Conexion = self::getConexion();
+
+                if (is_numeric($id)) {
+                    // Si el id es un número, usarlo directamente
+                    $res = $Conexion->PUBLICACIONES->findOne(['_id' => (int)$id]);
+                } else {
+                    // Si el id no es numérico, convertirlo a ObjectId
+                    $objectId = new \MongoDB\BSON\ObjectId($id);
+                    $res = $Conexion->PUBLICACIONES->findOne(['_id' => $objectId]);
+                }
+
+
+                self::desconectar();
+
+                if($res){
+                    $res['_id'] = (string) $res['_id'];
+                    return $res;
+                } else {
+                    return false;
+                }
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al obtener publicación: " . $e->getMessage());
+                return false;
             }
         }
     }

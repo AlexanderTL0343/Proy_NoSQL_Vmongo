@@ -381,8 +381,7 @@ class User extends ConexionAtlas
         }
     }
 
-    public function verificarExistenciaDb($id)//MONGO HECHO **REVISAR FUNCIONALIDAD**
-    {
+    public function verificarExistenciaDb($id){//MONGO HECHO **REVISAR FUNCIONALIDAD**
         try {
             // Obtiene la conexión a MongoDB
             $Conexion = ConexionAtlas::obtenerConexion();
@@ -402,8 +401,7 @@ class User extends ConexionAtlas
         }
     }
 
-
-    public function modificarUsuario() {
+    public function modificarUsuario() { //MONGO HECHO
         try {
             // Obtiene la conexión a MongoDB
             $Conexion = ConexionAtlas::obtenerConexion();
