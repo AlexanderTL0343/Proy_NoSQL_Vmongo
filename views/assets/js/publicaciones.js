@@ -1,9 +1,49 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyCpyzdEHxGvqRSZ7cvRqhb-hq0Ulq4iTTQ",
+    authDomain: "testweb-94eaf.firebaseapp.com",
+    projectId: "testweb-94eaf",
+    storageBucket: "testweb-94eaf.firebasestorage.app",
+    messagingSenderId: "646238631286",
+    appId: "1:646238631286:web:b834625c7cca8d9deb3657",
+    measurementId: "G-ZJ6DSL1D6H"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+
+  async function uploadImageAndGetUrl(file, path = 'images/') {
+    try {
+        // Crea una referencia al archivo en Firebase Storage
+        const storageRef = ref(storage, path + file.name);
+
+        // Sube el archivo a Firebase Storage
+        await uploadBytes(storageRef, file);
+
+        // Obtiene la URL pública del archivo subido
+        const downloadUrl = await getDownloadURL(storageRef);
+
+        // Devuelve la URL pública
+        return downloadUrl;
+    } catch (error) {
+        console.error("Error al subir la imagen:", error);
+        throw error; // Lanza el error para manejarlo en el código que llama a esta función
+    }
+}
+
+//---------------------------------------------------------------------------------------
+
+
 $(document).ready(function () {
     cargarCategorias();
     cargarPublicaciones();
-
-    //$("#updateJob").click(actualizarPublicacion);
-    //$("#submitApplication").click(enviarPostulacion);
+    $("#categoryFilter").on("change", filterProducts);
 });
 
 // Cargar categorías en el filtro
@@ -55,11 +95,19 @@ function cargarPublicaciones() {
 // Generar una tarjeta de publicación
 function generarCard(publicacion) {
     let nombreRol = document.getElementById("nombreRol").getAttribute("data-value");
+    let imagenUrl;
+
+    if (publicacion.imagen_url != "" && publicacion.imagen_url != " " ) {
+        imagenUrl = publicacion.imagen_url;
+    } else {
+        imagenUrl = "https://dummyimage.com/450x300/dee2e6/6c757d.jpg";
+    }
+    
     return `
       <li class="nav-item" data-category="${publicacion.id_categoria_fk}">
           <div class="col mb-5"">
               <div class="card h-100">
-                  <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                  <img class="card-img-top" src="${imagenUrl}" alt="..." />
                   <div class="card-body p-4">
                       <div class="text-center">
                           <h5 class="fw-bolder">${publicacion.titulo_publicacion}</h5>
@@ -99,11 +147,26 @@ function filterProducts() {
 
 // Subir una nueva publicación
 $(document).ready(function () {
-    $("#submitPublication").on("click", function (e) {
+    $("#submitPublication").on("click", async function (e) {
         e.preventDefault();
         console.log("El botón de 'Subir' ha sido presionado.");
 
         var formData = new FormData($("#formAddPublication")[0]);
+
+        var file = document.getElementById("imagen_url").files[0];
+
+        if (file) {
+            try {
+                const ImgUrl = await uploadImageAndGetUrl(file);
+                formData.append("imagenUrl", ImgUrl);
+            } catch (error) {
+                console.error("Error al subir la imagen:", error);
+                return;
+            }
+        }else {
+            formData.append("imagenUrl", ""); // O usa null según lo que necesite tu backend
+        }
+
         $.ajax({
             url: "../controllers/publicacionController.php?op=insertarPublicacion",
             type: "POST",
@@ -111,6 +174,7 @@ $(document).ready(function () {
             contentType: false,
             processData: false,
             success: function (response) {
+                console.log(response);
                 response = JSON.parse(response);
                 switch (response.status) {
                     case true:
@@ -323,3 +387,5 @@ function enviarPostulacion() {
         })
         .fail(() => alert("Error al enviar la postulación."));
 }
+
+

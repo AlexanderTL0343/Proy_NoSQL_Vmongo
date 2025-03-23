@@ -102,8 +102,8 @@ include("../config/session.php"); // Dependiendo del rol
           </div>
 
           <div class="mb-3">
-            <label for="imagen_url" class="form-label">Imagen URL</label>
-            <input type="url" class="form-control" id="imagen_url" name="imagenUrl" placeholder="URL de la imagen (opcional)">
+            <label for="imagen_url" class="form-label">Imagen</label>
+            <input type="file" class="form-control" id="imagen_url" name="imagenUrl" placeholder="URL de la imagen (opcional)">
           </div>
 
           <input type="hidden" name="id_estado_fk" value="1">
@@ -163,8 +163,8 @@ include("../config/session.php"); // Dependiendo del rol
           </div>
 
           <div class="mb-3">
-            <label for="edit_imagen_url" class="form-label">Imagen URL</label>
-            <input type="url" class="form-control" id="edit_imagen_url" name="imagenUrl" placeholder="URL de la imagen (opcional)">
+            <label for="edit_imagen_url" class="form-label">Imagen</label>
+            <input type="file" class="form-control" id="edit_imagen_url" name="imagenUrl" placeholder="URL de la imagen (opcional)">
           </div>
 
           <input type="hidden" name="id_publicacion" id="edit_id_publicacion">
@@ -182,9 +182,8 @@ include("../config/session.php"); // Dependiendo del rol
 
 <?php include("./assets/fragmentos/footer.php"); ?>
 </body>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="./assets/js/publicaciones.js"></script>
+<script type="module" src="assets/js/publicaciones.js"></script>
 <?php include("./assets/fragmentos/scripts.php"); ?>
 
 </html>

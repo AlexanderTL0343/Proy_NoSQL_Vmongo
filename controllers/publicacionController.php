@@ -12,7 +12,7 @@
             $publicacion->setProvincia(isset($_POST['provincia']) ? trim($_POST['provincia']) : "");
             $publicacion->setDireccion(isset($_POST['direccion']) ? trim($_POST['direccion']) : "");
             $publicacion->setIdCategoria(isset($_POST['categoria']) ? trim($_POST['categoria']) : 0);
-            $publicacion->setImagenUrl(isset($_POST['imagen_url']) ? trim($_POST['imagen_url']) : "");
+            $publicacion->setImagenUrl(isset($_POST['imagenUrl']) ? trim($_POST['imagenUrl']) : "");
             $publicacion->setIdEstado(isset($_POST['id_estado_fk']) ? trim($_POST['id_estado_fk']) : 1);
             $publicacion->setIdUsuario($_SESSION['usuario']['idUsuario']);
 
