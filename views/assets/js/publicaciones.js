@@ -126,7 +126,8 @@ function generarCard(publicacion) {
                             
                             ${nombreRol === "RECLUTADOR" || nombreRol === "ADMIN" ? `
                                 <!-- Botón de Eliminar -->
-                                <button class="btn btn-outline-danger flex-fill" onclick="eliminarPublicacion('${publicacion._id}')">Eliminar</button>
+                                <button class="btn btn-outline-danger flex-fill btn-eliminar" data-id="${publicacion._id}">Eliminar</button>
+
                             ` : ""}
                         </div>
                     </div>
@@ -318,7 +319,13 @@ $("#updateJob").click(function (e) {
 
 */
 
+
 // Eliminar publicación
+$(document).on("click", ".btn-eliminar", function() {
+    let id = $(this).data("id");
+    eliminarPublicacion(id);
+});
+
 function eliminarPublicacion(id) {
     Swal.fire({
         title: '¿Estás seguro?',
