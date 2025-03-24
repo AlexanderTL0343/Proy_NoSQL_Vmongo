@@ -1,41 +1,46 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject  } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
+import { firebaseConfig } from "../../../config/global.js"; //por seguridad se almacena por aparte
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-    apiKey: "AIzaSyCpyzdEHxGvqRSZ7cvRqhb-hq0Ulq4iTTQ",
-    authDomain: "testweb-94eaf.firebaseapp.com",
-    projectId: "testweb-94eaf",
-    storageBucket: "testweb-94eaf.firebasestorage.app",
-    messagingSenderId: "646238631286",
-    appId: "1:646238631286:web:b834625c7cca8d9deb3657",
-    measurementId: "G-ZJ6DSL1D6H"
-  };
-  
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const storage = getStorage(app);
 
   async function uploadImageAndGetUrl(file, path = 'images/') {
-    try {
-        // Crea una referencia al archivo en Firebase Storage
-        const storageRef = ref(storage, path + file.name);
+        try {
+            // Crea una referencia al archivo en Firebase Storage
+            const storageRef = ref(storage, path + file.name);
 
-        // Sube el archivo a Firebase Storage
-        await uploadBytes(storageRef, file);
+            // Sube el archivo a Firebase Storage
+            await uploadBytes(storageRef, file);
 
-        // Obtiene la URL pública del archivo subido
-        const downloadUrl = await getDownloadURL(storageRef);
+            // Obtiene la URL pública del archivo subido
+            const downloadUrl = await getDownloadURL(storageRef);
 
-        // Devuelve la URL pública
-        return downloadUrl;
-    } catch (error) {
-        console.error("Error al subir la imagen:", error);
-        throw error; // Lanza el error para manejarlo en el código que llama a esta función
+            // Devuelve la URL pública
+            return downloadUrl;
+        } catch (error) {
+            console.error("Error al subir la imagen:", error);
+            throw error; // Lanza el error para manejarlo en el código que llama a esta función
+        }
     }
-}
+    async function deleteImageByUrl(publicUrl) {
+        try {
+            // Extraer el path relativo del archivo
+            const path = publicUrl.split("/o/")[1].split("?")[0]; // Obtener desde "images/...png"
+            const decodedPath = decodeURIComponent(path); // Decodificar caracteres como %2F
+    
+            // Crear referencia al archivo
+            const fileRef = ref(storage, decodedPath);
+    
+            // Eliminar el archivo
+            await deleteObject(fileRef);
+            console.log("Archivo eliminado exitosamente:", decodedPath);
+        } catch (error) {
+            console.error("Error al eliminar la imagen:", error.message);
+        }
+    }
 
 //---------------------------------------------------------------------------------------
 
@@ -342,8 +347,11 @@ function eliminarPublicacion(id) {
                 data: {id: id,},
                 success: function (response) {
                     response = JSON.parse(response);
+                    console.log(response.img_url);
+
                     switch (response.status) {
                         case true:
+                            deleteImageByUrl(response.img_url);//borrar imagen del firebase
                             Swal.fire({
                                 icon: "success",
                                 title: "Publicación eliminada exitosamente",

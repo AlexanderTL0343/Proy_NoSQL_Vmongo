@@ -75,12 +75,16 @@
             break;*/
         case 'eliminarPublicacion':
             $publicacion = new publicacion();
+            $pub = $publicacion->obtenerPublicacion($_POST['id']);
             $res = $publicacion->eliminarPublicacion($_POST['id']);
+            
+            $imagenUrl = $pub['imagen_url'];
 
             //$response = array();
             $response = [
                 "status" => true,
-                "message" => "Publicación eliminada"
+                "message" => "Publicación eliminada",
+                "img_url" => $imagenUrl
             ];
 
             echo json_encode($response);
