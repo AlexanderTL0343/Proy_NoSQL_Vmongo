@@ -450,28 +450,147 @@ class User extends ConexionAtlas
         }
     }
     
-    public function obtenerUsuario($id){
+    public function obtenerUsuario($id){ //MONGO HECHO
         try {
             $Conexion = self::getConexion();
 
+            $id = trim($id);
+
             if(is_numeric($id)){
-               $res = $Conexion->USUARIOS->findOne(['_id' => (int)$id]);
+                $res = $Conexion->USUARIOS->aggregate([
+                    ['$match' => ['_id' => (int)$id]],
+                    [
+                        '$lookup' => [
+                            'from' => 'ROLES',
+                            'localField' => 'id_rol_fk',
+                            'foreignField' => '_id',
+                            'as' => 'rol'
+                        ]
+                    ],
+                    [
+                        '$lookup' => [
+                            'from' => 'ESTADOS',
+                            'localField' => 'id_estado_fk',
+                            'foreignField' => '_id',
+                            'as' => 'estado'
+                        ]
+                    ],
+                    [
+                        '$lookup' => [
+                            'from' => 'PROFESIONES',
+                            'localField' => 'id_profesion_fk',
+                            'foreignField' => '_id',
+                            'as' => 'profesion'
+                        ]
+                    ],
+                    ['$unwind' => '$rol'],
+                    ['$unwind' => '$estado'],
+                    ['$unwind' => '$profesion'],
+                    [
+                        '$addFields' => [
+                            'nombre_rol' => '$rol.rol',
+                            'nombre_estado' => '$estado.estado',
+                            'nombre_profesion' => '$profesion.nombreProfesion'
+                        ]
+                    ],
+                    [
+                        '$project' => [
+                            'rol' => 0,
+                            'estado' => 0,
+                            'profesion' => 0
+                        ]
+                    ]
+                ]);
+
             }else{
+
                 $objectId = new \MongoDB\BSON\ObjectId($id);
-                $res = $Conexion->USUARIOS->findOne(['_id' => $objectId]);
+                $res = $Conexion->USUARIOS->aggregate([
+                    ['$match' => ['_id' => $objectId]],
+                    [
+                        '$lookup' => [
+                            'from' => 'ROLES',
+                            'localField' => 'id_rol_fk',
+                            'foreignField' => '_id',
+                            'as' => 'rol'
+                        ]
+                    ],
+                    [
+                        '$lookup' => [
+                            'from' => 'ESTADOS',
+                            'localField' => 'id_estado_fk',
+                            'foreignField' => '_id',
+                            'as' => 'estado'
+                        ]
+                    ],
+                    [
+                        '$lookup' => [
+                            'from' => 'PROFESIONES',
+                            'localField' => 'id_profesion_fk',
+                            'foreignField' => '_id',
+                            'as' => 'profesion'
+                        ]
+                    ],
+                    ['$unwind' => '$rol'],
+                    ['$unwind' => '$estado'],
+                    ['$unwind' => '$profesion'],
+                    [
+                        '$addFields' => [
+                            'nombre_rol' => '$rol.rol',
+                            'nombre_estado' => '$estado.estado',
+                            'nombre_profesion' => '$profesion.nombreProfesion'
+                        ]
+                    ],
+                    [
+                        '$project' => [
+                            'rol' => 0,
+                            'estado' => 0,
+                            'profesion' => 0
+                        ]
+                    ]
+                ]);
             }
 
             self::desconectar();
 
-            if($res){
-                $res['_id'] = (string) $res['_id'];
-                return $res;
-            } else {
+            $usuario = iterator_to_array($res);
+
+            if (empty($usuario)) {
                 return false;
-            }
+            }else{
+                return $usuario;
+            }        
+           
         } catch (MongoDB\Driver\Exception\Exception $Exception) {
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return $error;
+        }
+    }
+
+    public function actualizarVariablesSesion($id){ //MONGO HECHO
+        $usuario = $this->obtenerUsuario($id);
+        if($usuario){
+            $_SESSION['usuario'] = [
+                'idUsuario' => $usuario[0]['_id'],
+                'nombreRol' => $usuario[0]['nombre_rol'],
+                'nombreEstado' => $usuario[0]['nombre_estado'],
+                'nombreProfesion' => $usuario[0]['nombre_profesion'],
+                'cedula' => $usuario[0]['cedulaUsuario'],
+                'nombre' => $usuario[0]['nombreUsuario'],
+                'apellido1' => $usuario[0]['apellido1'],
+                'apellido2' => $usuario[0]['apellido2'],
+                'edad' => $usuario[0]['edad'],
+                'direccion' => $usuario[0]['direccion'],
+                'telefono' => $usuario[0]['telefono'],
+                'email' => $usuario[0]['email'],
+                'facebook' => $usuario[0]['facebook'],
+                'instagram' => $usuario[0]['instagram'],
+                'fecha_registro' => $usuario[0]['fechaRegistro'],
+                'imagen_url' => $usuario[0]['imagen_url']
+            ];     
+            return true;
+        }else{
+            return false;
         }
     }
     

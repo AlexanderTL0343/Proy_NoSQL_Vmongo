@@ -12,7 +12,7 @@
         <div class="col-lg-4">
           <div class="card mb-4">
             <div class="card-body text-center">
-              <img src=<?php if (isset($_SESSION['usuario']['imagen_url'])) echo $_SESSION['usuario']['imagen_url']; ?> alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+              <img src=<?php if (isset($_SESSION['usuario']['imagen_url'])) echo $_SESSION['usuario']['imagen_url']; ?> alt="avatar" class="rounded-circle img-fluid" style="width: 150px; height: 150px;  object-fit: cover;">
               <h5 class="my-3"><?php if (isset($_SESSION['usuario']['nombre'])) echo $_SESSION['usuario']['nombre']; ?></h5>
               <p class="text-muted mb-1"><?php if (isset($_SESSION['usuario']['nombreProfesion'])) echo $_SESSION['usuario']['nombreProfesion']; ?></p>
               <p class="text-muted mb-4"><?php if (isset($_SESSION['usuario']['direccion'])) echo $_SESSION['usuario']['direccion']; ?></p>
@@ -207,6 +207,7 @@
               <p class="text-danger"></p>
             </div>
 
+            <input type="hidden" name="id" value="<?php echo $_SESSION['usuario']['idUsuario']; ?>">
             <input type="hidden" name="oldImagenUrl" value="<?php echo $_SESSION['usuario']['imagen_url']; ?>">
 
             <button type="submit" class="btn btn-primary">Guardar</button>

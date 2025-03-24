@@ -169,6 +169,36 @@ switch ($_GET['op']) {
                 echo json_encode($response);
             }
             break;
+        
+            case 'actualizarVariablesSesion':
+                // Obtener y limpiar el ID del usuario
+                $id = isset($_POST['idUsuario']) ? trim($_POST['idUsuario']) : "";
+            
+                // Registrar el ID recibido en los logs
+                error_log("ID recibido en actualizarVariablesSesion: " . var_export($id, true));
+            
+                // Validar si el ID es válido antes de continuar
+                if (empty($id)) {
+                    error_log("Error: ID de usuario vacío o no recibido.");
+                    echo json_encode([
+                        "status" => false,
+                        "message" => " actVSession id usuario no valido"
+                    ]);
+                    break;
+                }
+            
+                // Instanciar el modelo de usuario y actualizar sesión
+                $usuario = new User();
+                $res = $usuario->actualizarVariablesSesion($id);
+            
+                // Respuesta JSON basada en el resultado
+                echo json_encode([
+                    "status" => $res ? true : false,
+                    "message" => $res ? "Variables actualizadas" : "Error al actualizar las variables de sesión"
+                ]);
+                break;
+            
+
         case 'enviarEmailContrasena':
                 /*
                 $emailObtenido = isset($_GET['email']) ? trim($_GET['email']) : "";

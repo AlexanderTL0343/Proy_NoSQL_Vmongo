@@ -174,7 +174,8 @@ Swal.fire({
                             icon: 'success',
                             confirmButtonText: 'Aceptar'
                         }).then(() => {
-                            location.reload(); // Recargar la página después de cerrar la alerta
+                            actualizarSesion(formData.get("id"));
+                            location.reload();
                         });
                         break;
                     case "2":
@@ -200,3 +201,46 @@ Swal.fire({
     }
 });
 });
+
+function actualizarSesion(id_usuario){
+    console.log("ID enviado a AJAX:", id_usuario);
+    $.ajax({
+        url: '../controllers/UserController.php?op=actualizarVariablesSesion',
+        type: 'POST',
+        data: {idUsuario: id_usuario},
+        success: function (datos) {
+            // Manejar la respuesta del servidor
+
+            console.log("Respuesta bruta del servidor:", datos);
+
+            var response = JSON.parse(datos); // Intentar parsear JSON
+            console.log("Respuesta procesada:", response);
+
+
+            switch (datos.status) {
+                case true:
+                    console.log("Variables de sesión actualizadas correctamente.");
+                    break;
+                case false:
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error al actualizar las variables de sesión",
+                        text: "Revisa los errores y vuelve a intentarlo.",
+                        showConfirmButton: false,
+                        timer: 1800,
+                    });
+                    break;
+            }
+        },
+        error: function (err) {
+            console.error("Error en la solicitud AJAX:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Error al actualizar las variables de sesión",
+                text: "Revisa los errores y vuelve a intentarlo.",
+                showConfirmButton: false,
+                timer: 1800,
+            });
+        },
+    });
+}
