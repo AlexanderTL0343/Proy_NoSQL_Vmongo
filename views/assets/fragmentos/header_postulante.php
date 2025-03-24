@@ -67,7 +67,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link active" aria-current="page" href="../views/Mensajes.php">
                         <i class="bi bi-chat-dots icono-sidebar"></i>
                         Mensajes
                     </a>

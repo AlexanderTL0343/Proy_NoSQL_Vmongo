@@ -111,95 +111,96 @@ switch ($_GET['op']) {
         }
         break;
     case 'editar':     
-            $id = isset($_SESSION['usuario']['idUsuario']) ? $_SESSION['usuario']['idUsuario'] : null;
-            if ($id === null) {
-                echo 2; // Retorna error si no se encuentra el ID en la sesión
-                break;
-            }
-        
-            $nombre = isset($_POST["nombre"]) ? trim($_POST["nombre"]) : "";
-            $direccion = isset($_POST["direccion"]) ? trim($_POST["direccion"]) : "";
-            $telefono = isset($_POST["telefono"]) ? trim($_POST["telefono"]) : "";
-            $email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
-            $instagram = isset($_POST["instagram"]) ? trim($_POST["instagram"]) : "";
-            $facebook = isset($_POST["facebook"]) ? trim($_POST["facebook"]) : "";
-            $cedula = isset($_POST["cedula"]) ? trim($_POST["cedula"]) : "";
-            $imagen_url = isset($_POST["imagen"]) ? trim($_POST["imagen"]) : "";
-            $profesion = isset($_POST["profesion"]) ? trim($_POST["profesion"]) : "";
-        
-            $usuario = new User();
-            $usuario->setId($id);
-            $usuario->setNombre($nombre);
-            $usuario->setDireccion($direccion);
-            $usuario->setTelefono($telefono);
-            $usuario->setEmail($email);
-            $usuario->setInstagram($instagram);
-            $usuario->setFacebook($facebook);
-            $usuario->setCedula($cedula);
-            $usuario->setImagenUrl($imagen_url);
-            $usuario->setIdProfesion($profesion);
-        
-            $modificados = $usuario->modificarUsuario();
-            if ($modificados > 0) {
-                echo 1;
-            } else {
-                echo 0;
-            }
+        $id = isset($_SESSION['usuario']['idUsuario']) ? $_SESSION['usuario']['idUsuario'] : null;
+        if ($id === null) {
+            echo 2; // Retorna error si no se encuentra el ID en la sesión
             break;
-        
-        case 'obtenerUsuario':
-            $usuario = new User();
-            $res = $usuario->obtenerUsuario($_GET['id']);
-            
-            if($res){
-                $response = array();
-                $response = [
-                    "status" => true,
-                    "message" => "Usuario obtenido",
-                    "usuario" => $res
-                ];
+        }
     
-                echo json_encode($response);
-            }else{
-                $response = array();
-                $response = [
-                    "status" => false,
-                    "message" => "Error al obtener el usuario"
-                ];
-                echo json_encode($response);
-            }
-            break;
+        $nombre = isset($_POST["nombre"]) ? trim($_POST["nombre"]) : "";
+        $direccion = isset($_POST["direccion"]) ? trim($_POST["direccion"]) : "";
+        $telefono = isset($_POST["telefono"]) ? trim($_POST["telefono"]) : "";
+        $email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
+        $instagram = isset($_POST["instagram"]) ? trim($_POST["instagram"]) : "";
+        $facebook = isset($_POST["facebook"]) ? trim($_POST["facebook"]) : "";
+        $cedula = isset($_POST["cedula"]) ? trim($_POST["cedula"]) : "";
+        $imagen_url = isset($_POST["imagen"]) ? trim($_POST["imagen"]) : "";
+        $profesion = isset($_POST["profesion"]) ? trim($_POST["profesion"]) : "";
+    
+        $usuario = new User();
+        $usuario->setId($id);
+        $usuario->setNombre($nombre);
+        $usuario->setDireccion($direccion);
+        $usuario->setTelefono($telefono);
+        $usuario->setEmail($email);
+        $usuario->setInstagram($instagram);
+        $usuario->setFacebook($facebook);
+        $usuario->setCedula($cedula);
+        $usuario->setImagenUrl($imagen_url);
+        $usuario->setIdProfesion($profesion);
+    
+        $modificados = $usuario->modificarUsuario();
+        if ($modificados > 0) {
+            echo 1;
+        } else {
+            echo 0;
+        }
+        break;
         
-            case 'actualizarVariablesSesion':
-                // Obtener y limpiar el ID del usuario
-                $id = isset($_POST['idUsuario']) ? trim($_POST['idUsuario']) : "";
-            
-                // Registrar el ID recibido en los logs
-                error_log("ID recibido en actualizarVariablesSesion: " . var_export($id, true));
-            
-                // Validar si el ID es válido antes de continuar
-                if (empty($id)) {
-                    error_log("Error: ID de usuario vacío o no recibido.");
-                    echo json_encode([
-                        "status" => false,
-                        "message" => " actVSession id usuario no valido"
-                    ]);
-                    break;
-                }
-            
-                // Instanciar el modelo de usuario y actualizar sesión
-                $usuario = new User();
-                $res = $usuario->actualizarVariablesSesion($id);
-            
-                // Respuesta JSON basada en el resultado
-                echo json_encode([
-                    "status" => $res ? true : false,
-                    "message" => $res ? "Variables actualizadas" : "Error al actualizar las variables de sesión"
-                ]);
-                break;
-            
+    case 'obtenerUsuario':
+        $usuario = new User();
+        $res = $usuario->obtenerUsuario($_GET['id']);
+        
+        if($res){
+            $response = array();
+            $response = [
+                "status" => true,
+                "message" => "Usuario obtenido",
+                "usuario" => $res
+            ];
 
-        case 'enviarEmailContrasena':
+            echo json_encode($response);
+        }else{
+            $response = array();
+            $response = [
+                "status" => false,
+                "message" => "Error al obtener el usuario"
+            ];
+            echo json_encode($response);
+        }
+        break;
+    
+    case 'actualizarVariablesSesion':
+        // Obtener y limpiar el ID del usuario
+        $id = isset($_POST['idUsuario']) ? trim($_POST['idUsuario']) : "";
+    
+        // Registrar el ID recibido en los logs
+        error_log("ID recibido en actualizarVariablesSesion: " . var_export($id, true));
+    
+        // Validar si el ID es válido antes de continuar
+        if (empty($id)) {
+            error_log("Error: ID de usuario vacío o no recibido.");
+            echo json_encode([
+                "status" => false,
+                "message" => " actVSession id usuario no valido"
+            ]);
+            break;
+        }
+    
+        // Instanciar el modelo de usuario y actualizar sesión
+        $usuario = new User();
+        $res = $usuario->actualizarVariablesSesion($id);
+    
+        // Respuesta JSON basada en el resultado
+        echo json_encode([
+            "status" => $res ? true : false,
+            "message" => $res ? "Variables actualizadas" : "Error al actualizar las variables de sesión"
+        ]);
+        break;
+        
+        
+
+    case 'enviarEmailContrasena':
                 /*
                 $emailObtenido = isset($_GET['email']) ? trim($_GET['email']) : "";
         

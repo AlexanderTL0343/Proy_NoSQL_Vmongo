@@ -454,8 +454,6 @@ class User extends ConexionAtlas
         try {
             $Conexion = self::getConexion();
 
-            $id = trim($id);
-
             if(is_numeric($id)){
                 $res = $Conexion->USUARIOS->aggregate([
                     ['$match' => ['_id' => (int)$id]],
@@ -555,10 +553,10 @@ class User extends ConexionAtlas
 
             $usuario = iterator_to_array($res);
 
-            if (empty($usuario)) {
+            if (empty($usuario) || $usuario == null) {
                 return false;
             }else{
-                return $usuario;
+                return json_encode($usuario[0]);
             }        
            
         } catch (MongoDB\Driver\Exception\Exception $Exception) {

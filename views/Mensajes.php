@@ -9,14 +9,17 @@ include("./assets/fragmentos/head.php");
 <body>
 <?php include("../config/session.php"); ?>
 
+<Div id="idUserActual" data-idUser="<?php echo $_SESSION['usuario']['idUsuario']; ?>"></Div>
+
 <div>
-  <div class="container-fluid chat-container p-0">
+  <div class="container-fluid chat-container mt-4 p-0">
     <div class="chat-box-container">
       <!-- Lista de chats -->
       <div class="chat-list">
-        <div class="list-group">
+        <h4 class="p-2 m-0 bg-secondary text-white text-center">Chats</h4>
+        <ul class="list-group" id="listaChats">
           <!-- Lista de usuarios de chat (sin cambios) -->
-        </div>
+        </ul>
       </div>
 
       <!-- Chat seleccionado -->

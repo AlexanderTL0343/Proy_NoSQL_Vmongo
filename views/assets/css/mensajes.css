@@ -131,6 +131,7 @@ body {
 
     .chat-list {
       height: 30%;
+      overflow-y: auto;
       border-right: none;
       border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     }
