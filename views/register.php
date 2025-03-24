@@ -64,13 +64,7 @@
                     <label for="profesion">Profesión:</label>
                     <select name="profesion" class="form-control" id="profesion" required>
                         <option value="">Seleccione una Profesión</option>
-                        <!--<option value="Ingeniero">Especialista en Tecnología</option>
-                        <option value="Arquitecto">Profesional Jurídico</option>
-                        <option value="Profesiona-de-la-Salud">Profesional de la Salud</option>
-                        <option value="Ingeniero">Ingeniero </option>
-                        <option value="Técnico-Especializado">Técnico Especializado</option>
-                        <option value="Diseñador">Diseñador</option>
-                        <option value="Operador-de-Transporte">Operador de Transporte</option>-->
+
                     </select>
                     <p class="text-danger"></p>
                 </div>
@@ -100,8 +94,8 @@
                 </div>
 
                 <div class="form-group mb-4">
-                    <label for="imagen">Imagen:</label>
-                    <input name="imagen" type="file" class="form-control" id="imagen" />
+                    <label for="imagen-input">Imagen:</label>
+                    <input name="imagen" type="file" class="form-control" id="imagen-input" />
                     <p class="text-danger"></p>
                 </div>
 

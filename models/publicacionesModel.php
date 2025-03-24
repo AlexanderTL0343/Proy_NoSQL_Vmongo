@@ -117,7 +117,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
         }
         //----------------Métodos-----------------
 
-        public function insertarPublicacion(){
+        public function insertarPublicacion(){//MONGO HECHO
 
             try {
                 // Obtiene la conexión a la base de datos
@@ -183,7 +183,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
 
-        public function listarCategorias(){
+        public function listarCategorias(){//MONGO HECHO
 
             try {
                 $Conexion = self::getConexion();
@@ -203,7 +203,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
 
-        public function eliminarPublicacion($id){
+        public function eliminarPublicacion($id){//MONGO HECHO
             try {
                 $Conexion = self::getConexion();
 
@@ -231,7 +231,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
 
-        public function obtenerPublicacion($id){
+        public function obtenerPublicacion($id){//MONGO HECHO
             try {
                 $Conexion = self::getConexion();
 
@@ -259,5 +259,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
                 return false;
             }
         }
+
+        //QUEDA PENDIENTE EL ACTUALIZAR PUBLICACION
     }
 ?>

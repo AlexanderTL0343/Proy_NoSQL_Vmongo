@@ -12,7 +12,7 @@
         <div class="col-lg-4">
           <div class="card mb-4">
             <div class="card-body text-center">
-              <img src="./assets/imgs/Imagen1.png" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+              <img src=<?php if (isset($_SESSION['usuario']['imagen_url'])) echo $_SESSION['usuario']['imagen_url']; ?> alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
               <h5 class="my-3"><?php if (isset($_SESSION['usuario']['nombre'])) echo $_SESSION['usuario']['nombre']; ?></h5>
               <p class="text-muted mb-1"><?php if (isset($_SESSION['usuario']['nombreProfesion'])) echo $_SESSION['usuario']['nombreProfesion']; ?></p>
               <p class="text-muted mb-4"><?php if (isset($_SESSION['usuario']['direccion'])) echo $_SESSION['usuario']['direccion']; ?></p>
@@ -149,12 +149,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="editaruser" method="post" action="../controllers/UserController.php?op=editarPerfil">
-            <div class="form-group mb-4">
-              <label for="imagen">Imagen:</label>
-              <input name="imagen" type="file" class="form-control" id="imagen" />
-              <p class="text-danger"></p>
-            </div>
+          <form id="editaruser" method="post" action="../controllers/UserController.php?op=editarPerfil">  
 
             <div class="form-group mb-4">
               <label for="nombre">Nombre:</label>
@@ -206,6 +201,14 @@
               <p class="text-danger"></p>
             </div>
 
+            <div class="form-group mb-4">
+              <label for="edt-imagen">Imagen:</label>
+              <input name="imagen" type="file" class="form-control" id="edt-imagen" />
+              <p class="text-danger"></p>
+            </div>
+
+            <input type="hidden" name="oldImagenUrl" value="<?php echo $_SESSION['usuario']['imagen_url']; ?>">
+
             <button type="submit" class="btn btn-primary">Guardar</button>
           </form>
         </div>
@@ -215,8 +218,8 @@
 
   <?php include("./assets/fragmentos/footer.php"); ?>
   <?php include("./assets/fragmentos/scripts.php"); ?>
-  <script src="plugins/bootbox/bootbox.min.js"></script>
-  <script src="./assets/js/index.js"></script>
+  <script type="module" src="./assets/js/perfil.js"></script>
+  <script type="module" src="./assets/js/index.js"></script>
 </body>
 
 </html>

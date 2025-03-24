@@ -450,6 +450,30 @@ class User extends ConexionAtlas
         }
     }
     
+    public function obtenerUsuario($id){
+        try {
+            $Conexion = self::getConexion();
+
+            if(is_numeric($id)){
+               $res = $Conexion->USUARIOS->findOne(['_id' => (int)$id]);
+            }else{
+                $objectId = new \MongoDB\BSON\ObjectId($id);
+                $res = $Conexion->USUARIOS->findOne(['_id' => $objectId]);
+            }
+
+            self::desconectar();
+
+            if($res){
+                $res['_id'] = (string) $res['_id'];
+                return $res;
+            } else {
+                return false;
+            }
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
+            return $error;
+        }
+    }
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //aqui pintamos los graficos 

@@ -155,7 +155,6 @@ function filterProducts() {
 $(document).ready(function () {
     $("#submitPublication").on("click", async function (e) {
         e.preventDefault();
-        console.log("El botón de 'Subir' ha sido presionado.");
 
         var formData = new FormData($("#formAddPublication")[0]);
 
@@ -180,7 +179,6 @@ $(document).ready(function () {
             contentType: false,
             processData: false,
             success: function (response) {
-                console.log(response);
                 response = JSON.parse(response);
                 switch (response.status) {
                     case true:

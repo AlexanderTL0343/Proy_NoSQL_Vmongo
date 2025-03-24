@@ -1,3 +1,33 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
+import { firebaseConfig } from "../../../config/global.js"; //por seguridad se almacena por aparte
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+
+async function uploadImageAndGetUrl(file, path = 'usuarios/') {
+  try {
+    // Crea una referencia al archivo en Firebase Storage
+    const storageRef = ref(storage, path + file.name);
+
+    // Sube el archivo a Firebase Storage
+    await uploadBytes(storageRef, file);
+
+    // Obtiene la URL pública del archivo subido
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    // Devuelve la URL pública
+    return downloadUrl;
+  } catch (error) {
+    console.error("Error al subir la imagen:", error);
+    throw error; // Lanza el error para manejarlo en el código que llama a esta función
+  }
+}
+
+//---------------------------------------------------------------------------------------
+
 function limpiarFormulario() {
   document.getElementById("cedula").value = "";
   document.getElementById("nombre").value = "";
@@ -7,6 +37,7 @@ function limpiarFormulario() {
   document.getElementById("edad").value = "";
   document.getElementById("direccion").value = "";
   document.getElementById("telefono").value = "";
+  document.getElementById("imagen-input").value = "";
 }
 
 function listarProfesiones() {
@@ -14,7 +45,7 @@ function listarProfesiones() {
     url: "../controllers/UserController.php?op=obtenerProfesiones",
     type: "GET",
     success: function (datos) {
-      
+
       datos = JSON.parse(datos);
       //console.log(datos)
       switch (datos.status) {
@@ -23,14 +54,14 @@ function listarProfesiones() {
 
           const selectProfesion = document.getElementById("profesion");
           selectProfesion.innerHTML = ""; // Limpiar las opciones existentes
-          
+
           datos.datos.forEach(profesion => {
             const opt = document.createElement("option"); //crear el option
             opt.value = profesion._id; // Asigna el valor del campo _id
             opt.text = profesion.nombreProfesion; // Asigna el texto del campo nombreProfesion
             selectProfesion.appendChild(opt); //insertar el option en el select
           });
-          
+
           break;
 
         case false:
@@ -65,9 +96,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
 //FUNCION PARA REGISTRAR USUARIO
 $(document).ready(function () {
-  $("#registroUsuario").on("submit", function (e) {
+  $("#registroUsuario").on("submit", async function (e) {
     e.preventDefault();
+
     var formData = new FormData($("#registroUsuario")[0]);
+
+    var file = document.getElementById("imagen-input").files[0];
+
+    if (file) {
+      try {
+        const ImgUrl = await uploadImageAndGetUrl(file);
+        formData.append("imagen", ImgUrl);
+      } catch (error) {
+        console.error("Error al subir la imagen:", error);
+        return;
+      }
+    }
+
     $.ajax({
       url: "../controllers/UserController.php?op=insertarUsuario",
       type: "POST",
@@ -80,14 +125,14 @@ $(document).ready(function () {
           case true:
             limpiarFormulario();
             Swal.fire({
-                icon: "success",
-                title: "Usuario registrado exitosamente",
-                showConfirmButton: false,
-                timer: 1800,
-              }).then(() => {
-                // Redirigir después de que el cuadro desaparezca
-                window.location.href = "index.php";  
-              })
+              icon: "success",
+              title: "Usuario registrado exitosamente",
+              showConfirmButton: false,
+              timer: 1800,
+            }).then(() => {
+              // Redirigir después de que el cuadro desaparezca
+              window.location.href = "index.php";
+            })
             break;
 
           case false:
@@ -118,7 +163,7 @@ $("#login").on("submit", function (e) {
     data: formData,
     contentType: false,
     processData: false,
-    
+
     success: function (datos) {
       console.log(datos);
       datos = JSON.parse(datos);
@@ -135,24 +180,24 @@ $("#login").on("submit", function (e) {
           }).then(() => {
             // Redirigir después de que el cuadro desaparezca
             var sessionAdmin = datos[0].nombreRol;
-            
+
             if (sessionAdmin == "ADMIN") {
               window.location.href = "reportes.php";
-            }else if (sessionAdmin == "RECLUTADOR") {
+            } else if (sessionAdmin == "RECLUTADOR") {
               window.location.href = "main.php";
-            }else if (sessionAdmin == "POSTULANTE") {
+            } else if (sessionAdmin == "POSTULANTE") {
               window.location.href = "main.php";
-            }  
-             //Redirigir a la pagina de PAOLA
-            });
+            }
+            //Redirigir a la pagina de PAOLA
+          });
           break;
 
         case false:
-            Swal.fire({
-                icon: "error",
-                title: "Error al iniciar sesión",
-                text: "Usuario o contraseña incorrecta!",
-              });
+          Swal.fire({
+            icon: "error",
+            title: "Error al iniciar sesión",
+            text: "Usuario o contraseña incorrecta!",
+          });
           break;
       }
     },
@@ -162,8 +207,9 @@ $("#login").on("submit", function (e) {
     },
   });
 });
+
 document.getElementById("olvidasteContrasena").addEventListener("click", function () {
-  
+
   Swal.fire({
     title: "¿Olvidaste tu contraseña?",
     text: "Ingresa tu correo electrónico para recuperar tu contraseña.",
@@ -201,5 +247,5 @@ document.getElementById("olvidasteContrasena").addEventListener("click", functio
       }
     },
     allowOutsideClick: () => !Swal.isLoading()
-  }); 
+  });
 });

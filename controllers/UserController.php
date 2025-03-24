@@ -6,8 +6,8 @@ switch ($_GET['op']) {
         //$contrasena=(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
        // $clavehash = hash('SHA256', trim($contrasena));
         $usuario = new User();
-        $usuario->setIdRol(isset($_POST['tipoUsuario']) ? trim($_POST['tipoUsuario']) : 0);
-        $usuario->setIdProfesion(isset($_POST['profesion']) ? trim($_POST['profesion']) : 0);
+        $usuario->setIdRol(isset($_POST['tipoUsuario']) ? intval(trim($_POST['tipoUsuario'])): 0); //INT VAL PARA PARSEARLOS A INT
+        $usuario->setIdProfesion(isset($_POST['profesion']) ? intval(trim($_POST['profesion'])) : 0);
         $usuario->setCedula(isset($_POST['cedula']) ? trim($_POST['cedula']) : "");
         $usuario->setNombre(isset($_POST['nombre']) ? trim($_POST['nombre']) : "");
         $usuario->setApellido1(isset($_POST['apellido1']) ? trim($_POST['apellido1']) : "");
@@ -17,7 +17,7 @@ switch ($_GET['op']) {
         $usuario->setTelefono(isset($_POST['telefono']) ? trim($_POST['telefono']) : 0);
         $usuario->setEmail(isset($_POST['email']) ? trim($_POST['email']) : "");
         $usuario->setContrasena(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
-        $usuario->setImagenUrl(isset($_FILES['imagen']) ? $_FILES['imagen']['name'] : "");
+        $usuario->setImagenUrl(isset($_POST['imagen']) ? trim($_POST['imagen']) : ""); // Usamos la URL de la imagen
     
 
 
@@ -69,6 +69,7 @@ switch ($_GET['op']) {
         break;
 
     case 'obtenerProfesiones':
+        //actaulmete esta sin uso
         $usuario = new User();
         $res = $usuario->obtenerProfesiones();
 
@@ -109,8 +110,7 @@ switch ($_GET['op']) {
             echo json_encode($response);
         }
         break;
-    case 'editar':
-            
+    case 'editar':     
             $id = isset($_SESSION['usuario']['idUsuario']) ? $_SESSION['usuario']['idUsuario'] : null;
             if ($id === null) {
                 echo 2; // Retorna error si no se encuentra el ID en la sesión
@@ -146,8 +146,31 @@ switch ($_GET['op']) {
                 echo 0;
             }
             break;
-            case 'enviarEmailContrasena':
-
+        
+        case 'obtenerUsuario':
+            $usuario = new User();
+            $res = $usuario->obtenerUsuario($_GET['id']);
+            
+            if($res){
+                $response = array();
+                $response = [
+                    "status" => true,
+                    "message" => "Usuario obtenido",
+                    "usuario" => $res
+                ];
+    
+                echo json_encode($response);
+            }else{
+                $response = array();
+                $response = [
+                    "status" => false,
+                    "message" => "Error al obtener el usuario"
+                ];
+                echo json_encode($response);
+            }
+            break;
+        case 'enviarEmailContrasena':
+                /*
                 $emailObtenido = isset($_GET['email']) ? trim($_GET['email']) : "";
         
         
@@ -197,5 +220,5 @@ switch ($_GET['op']) {
                     echo json_encode(["status" => "error", "message" => $response]);
                 }
         
-                break;
+                break;*/
 }
