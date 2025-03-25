@@ -225,8 +225,6 @@
       </div>
     </div>
   </div>
-  <p><?php echo $_SESSION['usuario']['imagen_url']; ?></p>
-
   <?php include("./assets/fragmentos/footer.php"); ?>
   <?php include("./assets/fragmentos/scripts.php"); ?>
   <script type="module" src="./assets/js/perfil.js"></script>

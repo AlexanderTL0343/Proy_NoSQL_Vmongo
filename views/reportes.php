@@ -1,4 +1,6 @@
-<?php session_start(); ?>
+<?php session_start();
+include("./assets/fragmentos/sinSesion401.php");
+?>
 <!DOCTYPE html>
 <html lang="es">
 
