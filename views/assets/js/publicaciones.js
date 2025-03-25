@@ -356,8 +356,7 @@ function eliminarPublicacion(id) {
                                 showConfirmButton: false,
                                 timer: 1800,
                             }).then(() => {
-                                // Redirigir después de que el cuadro desaparezca
-                                window.location.href = "main.php";
+                                listarChats();
                             });
                             break;
 

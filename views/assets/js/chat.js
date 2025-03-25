@@ -60,6 +60,36 @@ $(document).ready(function () {
   listarUsuarios();//se lista para agregar chats
 });
 
+/*
+document.getElementById("listaChats").addEventListener("click", function (event) {
+  let boton = event.target.closest("button"); // Detecta si se hizo clic en un botón de chat
+  if (boton) {
+    let userAux = JSON.parse(boton.dataset.chat); // Obtener y parsear el JSO
+    mostrarChat(boton.id, userAux);
+  }
+});*/
+
+document.getElementById("listaChats").addEventListener("click", function (event) {
+  let boton = event.target.closest("button"); // Detecta si se hizo clic en un botón de chat
+  if (boton && boton.classList.contains("btnVerCHAT")) { // Verifica que el botón tenga la clase correcta
+    let userAux = JSON.parse(boton.dataset.chat); // Obtener y parsear el JSON
+    mostrarChat(boton.id, userAux);
+  }
+
+  if (boton && boton.classList.contains("btnEliminarCHAT")) { // Verifica que el botón tenga la clase correcta
+    let idChat= boton.dataset.id; // Obtener y parsear el JSON
+    console.log(idChat);
+    eliminarChat(idChat);
+  }
+
+});btnEliminarCHAT
+
+function mostrarChat(idChat, usuarioDestino) {
+  document.getElementById("chat-inicial").textContent = usuarioDestino.nombreUsuario.charAt(0);
+  document.getElementById("chat-name").textContent = usuarioDestino.nombreUsuario;
+  document.getElementById("chat-box").innerHTML = ""; // Limpia el chat anterior
+  listarMensajes(idChat);
+}
 
 function listarChats() {
   let idUsuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
@@ -77,12 +107,12 @@ function listarChats() {
           //console.log(response.datos);
           response.datos.forEach(chat => {
             //console.log(chat);
-            generarCard(chat,idUsuarioActual).then(card => {
+            generarCard(chat, idUsuarioActual).then(card => {
               $("#listaChats").append(card);
             });
           });
 
-        break;
+          break;
         case false:
           Swal.fire({
             icon: "error",
@@ -97,26 +127,26 @@ function listarChats() {
     error: function (err) {
       console.error("Error en la solicitud AJAX:", err);
       Swal.fire({
-          icon: "error",
-          title: "Error al listar los chats",
-          text: "Revisa los errores y vuelve a intentarlo.",
-          showConfirmButton: false,
-          timer: 1800,
+        icon: "error",
+        title: "Error al listar los chats",
+        text: "Revisa los errores y vuelve a intentarlo.",
+        showConfirmButton: false,
+        timer: 1800,
       });
-  },
+    },
   });
 }
 
-function generarCard(chat,idUsuarioActual) {//idUsuarioActual es el id del remitente
+function generarCard(chat, idUsuarioActual) {//idUsuarioActual es el id del remitente
   let idChat = chat._id;
   let participantes = chat.participantes;
 
   return Promise.all([
     obtenerUsuario(participantes[0]),
     obtenerUsuario(participantes[1])
-    
+
   ]).then(([usuario1, usuario2]) => {
-    
+
     let userAux;
 
     //evitamos pasar el id del usuario actual
@@ -139,9 +169,15 @@ function generarCard(chat,idUsuarioActual) {//idUsuarioActual es el id del remit
             <small class="text-success">En línea</small>
           </div>
         </div>
-        <button class="btn btn-outline-primary" type="button" id="${idChat}" data-chat="${JSON.stringify(userAux).replace(/"/g, "&quot;")}" style="font-size: 1rem;">
-          <i class="bi bi-chat-fill"></i>
+        <div>
+        <button class="btn btn-outline-primary btnVerCHAT" type="button" id="${idChat}" data-chat="${JSON.stringify(userAux).replace(/"/g, "&quot;")}" style="font-size: 1rem;">
+          <i class="bi bi-chat-dots"></i>
         </button>
+
+        <button class="btn btn-outline-danger btnEliminarCHAT" type="button" data-id="${idChat}" style="font-size: 1rem;">
+          <i class="bi bi-trash"></i>
+        </button>
+        </div>
       </li> 
     `;//NOTA: ES MALA PRACTICA PERO SE PASA EL USUARIO DE DESTINO COMO UN JSON EN VEZ DEL ID, ESTP PARA EVIAR CONSULTARLO A CADA RATO, ESTO EN EL BOTON/
     //SE PUEDE CAMBIAR YA QUE TENEMOS EL METODO DE OBTENER EL USUARIO ***EL JSON CON LOS DATOS SE VEN EN EL F12***
@@ -171,23 +207,7 @@ function obtenerUsuario(idUsuario) {
   });
 }
 
-
-document.getElementById("listaChats").addEventListener("click", function (event) {
-  let boton = event.target.closest("button"); // Detecta si se hizo clic en un botón de chat
-  if (boton) {
-    let userAux = JSON.parse(boton.dataset.chat); // Obtener y parsear el JSO
-    mostrarChat(boton.id, userAux);
-  }
-});
-
-function mostrarChat(idChat,usuarioDestino){
-  document.getElementById("chat-inicial").textContent = usuarioDestino.nombreUsuario.charAt(0);
-  document.getElementById("chat-name").textContent = usuarioDestino.nombreUsuario;
-  document.getElementById("chat-box").innerHTML = ""; // Limpia el chat anterior
-  listarMensajes(idChat);
-}
-
-function listarMensajes(idChat){
+function listarMensajes(idChat) {
 
   let usuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
 
@@ -220,13 +240,13 @@ function listarMensajes(idChat){
     error: function (err) {
       console.error("Error en la solicitud AJAX:", err);
       Swal.fire({
-          icon: "error",
-          title: "Error al listar los mensajes",
-          text: "Revisa los errores y vuelve a intentarlo.",
-          showConfirmButton: false,
-          timer: 1800,
+        icon: "error",
+        title: "Error al listar los mensajes",
+        text: "Revisa los errores y vuelve a intentarlo.",
+        showConfirmButton: false,
+        timer: 1800,
       });
-  },
+    },
   });
 }
 
@@ -253,7 +273,7 @@ function agregarMensajesAlChat(mensajes, idUsuarioActual) {
 
 //---------------------------------------------------------------------------------------
 
-function listarUsuarios(){
+function listarUsuarios() {
   $.ajax({
     url: "../controllers/UserController.php?op=listarUsuarios",
     type: "GET",
@@ -278,20 +298,23 @@ function listarUsuarios(){
     error: function (err) {
       console.error("Error en la solicitud AJAX:", err);
       Swal.fire({
-          icon: "error",
-          title: "Error al listar los usuarios",
-          text: "Revisa los errores y vuelve a intentarlo.",
-          showConfirmButton: false,
-          timer: 1800,
+        icon: "error",
+        title: "Error al listar los usuarios",
+        text: "Revisa los errores y vuelve a intentarlo.",
+        showConfirmButton: false,
+        timer: 1800,
       });
-  },
+    },
   });
 }
 
 function generarOpcionesUsuarios(arrayUsuarios) {
+  let usuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
   let html = "";
   arrayUsuarios.forEach(usuario => {
-    html += `<option value="${usuario._id}">${usuario.nombreUsuario}</option>`;
+    if (usuario._id !== usuarioActual) {//IF PARA EVITAR AGREGAR EL USUARIO ACTUAL A LA LISTA DE USUARIOS PARA CREAR CHAT
+      html += `<option value="${usuario._id}">${usuario.nombreUsuario}</option>`;
+    }
   });
   document.getElementById("listaUsuariosChat").innerHTML = html;
 }
@@ -306,7 +329,7 @@ $(document).ready(function () {
     $.ajax({
       url: "../controllers/chatsController.php?op=insertarChat",
       type: "POST",
-      data: formData ,//id usuario actual sera el id del remitente
+      data: formData,//id usuario actual sera el id del remitente
       contentType: false,
       processData: false,
       success: function (response) {
@@ -320,10 +343,8 @@ $(document).ready(function () {
               showConfirmButton: false,
               timer: 1800,
             }).then(() => {
-              
-              //revisar
               listarChats();
-
+              $('#nuevoChatModal').modal('hide');
             });
             break;
 
@@ -336,7 +357,7 @@ $(document).ready(function () {
               timer: 1800,
             });
             break;
-          
+
           case "existente":
             Swal.fire({
               icon: "error",
@@ -345,19 +366,62 @@ $(document).ready(function () {
               showConfirmButton: false,
               timer: 1800,
             });
-          break;
+            break;
         }
       },
       error: function (err) {
         console.error("Error en la solicitud AJAX:", err);
         Swal.fire({
-            icon: "error",
-            title: "Error al crear el chat",
-            text: "Revisa los errores y vuelve a intentarlo.",
-            showConfirmButton: false,
-            timer: 1800,
+          icon: "error",
+          title: "Error al crear el chat",
+          text: "Revisa los errores y vuelve a intentarlo.",
+          showConfirmButton: false,
+          timer: 1800,
         });
       },
     });
   });
 });
+
+
+// Eliminar chat
+function eliminarChat(idChat){
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: '¿Desea eliminar este chat?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: "../controllers/chatsController.php?op=eliminarChat",
+        type: "GET",
+        data: { id: idChat },
+        success: function (response) {
+          response = JSON.parse(response);
+          console.log(response);
+
+          switch (response.status) {
+            case true:
+              listarChats();
+              break;
+            case false:
+              Swal.fire({
+                icon: "error",
+                title: "Error al eliminar el chat",
+                text: "Revisa los errores y vuelve a intentarlo.",
+                showConfirmButton: false,
+                timer: 1800,
+              });
+              break;
+          }
+        },
+        error: function (err) {
+          console.error("Error en la solicitud AJAX:", err);
+        }
+      })
+    }
+  })
+}

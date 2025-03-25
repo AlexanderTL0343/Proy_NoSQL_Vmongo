@@ -194,6 +194,35 @@
                 return false;
             }
         }
+
+        public function eliminarChat($idChat){
+            try {
+                $Conexion = self::getConexion();
+
+                if (is_numeric($idChat)) {
+                    $idChat = (int) $idChat;
+                }
+
+                if (is_string($idChat)) {
+                    $idChat = new \MongoDB\BSON\ObjectId($idChat);
+                }
+
+                $res = $Conexion->CHATS->deleteOne(['_id' => $idChat]);
+
+                self::desconectar();
+
+                if($res->getDeletedCount() == 1){
+                    return true;
+                }else{
+                    return false;
+                }
+
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al validar chat repetido: " . $e->getMessage());
+                return false;
+            }    
+        }
         /*
         function obtenerChat($id){
             try {

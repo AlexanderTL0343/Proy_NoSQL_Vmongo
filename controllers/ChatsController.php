@@ -101,6 +101,27 @@
 
             echo json_encode($response);
             break;
+
+        case 'eliminarChat':
+            $Chat = new Chat();
+            $res = $Chat->eliminarChat($_GET['id']);
+
+            if($res){
+                $response = array();
+                $response = [
+                    "status" => true,
+                    "message" => "Chat eliminado exitosamente",
+                ];
+            }else{
+                $response = array();
+                $response = [
+                    "status" => false,
+                    "message" => "Error al eliminar el chat"
+                ];
+            }
+
+            echo json_encode($response);
+            break;
     }
 
 ?>
