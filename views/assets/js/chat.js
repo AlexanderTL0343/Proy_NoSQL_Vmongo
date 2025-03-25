@@ -82,7 +82,7 @@ document.getElementById("listaChats").addEventListener("click", function (event)
     eliminarChat(idChat);
   }
 
-});btnEliminarCHAT
+});
 
 function mostrarChat(idChat, usuarioDestino) {
   document.getElementById("chat-inicial").textContent = usuarioDestino.nombreUsuario.charAt(0);
