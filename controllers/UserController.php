@@ -170,6 +170,19 @@ switch ($_GET['op']) {
         }
         break;
     
+    case 'listarUsuarios':
+        $usuario = new User();
+        $res = $usuario->listarUsuarios();
+
+        $response = [
+            "status" => true,
+            "message" => "Usuarios obtenidos",
+            "datos" => $res
+        ];
+    
+        echo json_encode($response); // Asegúrate de codificar como JSON correctamente
+        break;
+    
     case 'actualizarVariablesSesion':
         // Obtener y limpiar el ID del usuario
         $id = isset($_POST['idUsuario']) ? trim($_POST['idUsuario']) : "";

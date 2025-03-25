@@ -75,7 +75,12 @@
                         Analisis
                     </a>
                 </li>
-
+                <li class="nav-item">
+                    <button class="nav-item btn btn-outline-danger" id="btn-serverWS" style="border: none;">
+                        <i class="bi bi-exclamation-triangle" style="margin-left: 5px;"></i>
+                        <span class="ml-2">SERVER WEB SOCKETS</span>
+                    </button>
+                </li>
             </ul>
         </div>
     </nav>

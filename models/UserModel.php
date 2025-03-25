@@ -553,6 +553,8 @@ class User extends ConexionAtlas
 
             $usuario = iterator_to_array($res);
 
+            $usuario[0]['_id'] = (string) $usuario[0]['_id'];
+
             if (empty($usuario) || $usuario == null) {
                 return false;
             }else{
@@ -562,6 +564,31 @@ class User extends ConexionAtlas
         } catch (MongoDB\Driver\Exception\Exception $Exception) {
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return $error;
+        }
+    }
+
+    public function listarUsuarios(){
+        try {
+            $Conexion = self::getConexion();
+
+            $res = $Conexion->USUARIOS->find();
+
+            self::desconectar();
+
+            $usuarios = iterator_to_array($res);
+
+            foreach ($usuarios as $usuario) { //convertir de OBJECT ID a STRING
+                $usuario['_id'] = (string) $usuario['_id'];
+            }
+
+            return $usuarios;
+        } catch (MongoDB\Driver\Exception\Exception $e) {
+            // En caso de error, registrar el error en el log y retornar un mensaje de error
+            error_log("Error al obtener profesiones: " . $e->getMessage());
+            return [
+                "status" => false,
+                "message" => "Error al obtener profesiones."
+            ]; 
         }
     }
 

@@ -139,4 +139,11 @@ body {
     .chat-content {
       height: 70%;
     }
+
+    .message-date {
+      font-size: 0.8em;
+      color: gray;
+      display: block;
+      margin-top: 5px;
+    }
   }
