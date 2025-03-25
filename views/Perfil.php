@@ -12,7 +12,15 @@
         <div class="col-lg-4">
           <div class="card mb-4">
             <div class="card-body text-center">
-              <img src=<?php if (isset($_SESSION['usuario']['imagen_url'])) echo $_SESSION['usuario']['imagen_url']; ?> alt="avatar" class="rounded-circle img-fluid" style="width: 150px; height: 150px;  object-fit: cover;">
+              <img src=<?php
+              //si la varaible de sesion no esta vacia y es distinta de "" mostrara esa imagen si no una default
+              if (isset($_SESSION['usuario']['imagen_url']) && $_SESSION['usuario']['imagen_url'] != "") {
+                echo $_SESSION['usuario']['imagen_url'] ;
+              }else{
+                echo "./assets/imgs/DefaultUser.png";
+              }
+            
+              ?> alt="avatar" class="rounded-circle img-fluid" style="width: 150px; height: 150px;  object-fit: cover;">
               <h5 class="my-3"><?php if (isset($_SESSION['usuario']['nombre'])) echo $_SESSION['usuario']['nombre']; ?></h5>
               <p class="text-muted mb-1"><?php if (isset($_SESSION['usuario']['nombreProfesion'])) echo $_SESSION['usuario']['nombreProfesion']; ?></p>
               <p class="text-muted mb-4"><?php if (isset($_SESSION['usuario']['direccion'])) echo $_SESSION['usuario']['direccion']; ?></p>
@@ -212,10 +220,12 @@
 
             <button type="submit" class="btn btn-primary">Guardar</button>
           </form>
+          
         </div>
       </div>
     </div>
   </div>
+  <p><?php echo $_SESSION['usuario']['imagen_url']; ?></p>
 
   <?php include("./assets/fragmentos/footer.php"); ?>
   <?php include("./assets/fragmentos/scripts.php"); ?>

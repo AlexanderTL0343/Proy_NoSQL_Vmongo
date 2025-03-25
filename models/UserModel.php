@@ -431,6 +431,13 @@ class User extends ConexionAtlas
                 'id_profesion_fk' => $profesion     
             ];
     
+            if(is_numeric($id)){
+                $id = (int)$id;
+            }else{
+                $id = new \MongoDB\BSON\ObjectId($id);
+            }
+
+
             // Realiza la actualización en la colección "USUARIOS"
             $resultado = $Conexion->USUARIOS->updateOne(
                 ['_id' => $id],  // Filtro para encontrar al usuario por su ID
@@ -567,7 +574,7 @@ class User extends ConexionAtlas
         }
     }
 
-    public function listarUsuarios(){
+    public function listarUsuarios(){ //MONGO HECHO
         try {
             $Conexion = self::getConexion();
 
@@ -593,25 +600,26 @@ class User extends ConexionAtlas
     }
 
     public function actualizarVariablesSesion($id){ //MONGO HECHO
-        $usuario = $this->obtenerUsuario($id);
+        $usuario = json_decode($this->obtenerUsuario($id), true);
+        
         if($usuario){
             $_SESSION['usuario'] = [
-                'idUsuario' => $usuario[0]['_id'],
-                'nombreRol' => $usuario[0]['nombre_rol'],
-                'nombreEstado' => $usuario[0]['nombre_estado'],
-                'nombreProfesion' => $usuario[0]['nombre_profesion'],
-                'cedula' => $usuario[0]['cedulaUsuario'],
-                'nombre' => $usuario[0]['nombreUsuario'],
-                'apellido1' => $usuario[0]['apellido1'],
-                'apellido2' => $usuario[0]['apellido2'],
-                'edad' => $usuario[0]['edad'],
-                'direccion' => $usuario[0]['direccion'],
-                'telefono' => $usuario[0]['telefono'],
-                'email' => $usuario[0]['email'],
-                'facebook' => $usuario[0]['facebook'],
-                'instagram' => $usuario[0]['instagram'],
-                'fecha_registro' => $usuario[0]['fechaRegistro'],
-                'imagen_url' => $usuario[0]['imagen_url']
+                'idUsuario' => $usuario['_id'],
+                'nombreRol' => $usuario['nombre_rol'],
+                'nombreEstado' => $usuario['nombre_estado'],
+                'nombreProfesion' => $usuario['nombre_profesion'],
+                'cedula' => $usuario['cedulaUsuario'],
+                'nombre' => $usuario['nombreUsuario'],
+                'apellido1' => $usuario['apellido1'],
+                'apellido2' => $usuario['apellido2'],
+                'edad' => $usuario['edad'],
+                'direccion' => $usuario['direccion'],
+                'telefono' => $usuario['telefono'],
+                'email' => $usuario['email'],
+                'facebook' => $usuario['facebook'],
+                'instagram' => $usuario['instagram'],
+                'fecha_registro' => $usuario['fechaRegistro'],
+                'imagen_url' => $usuario['imagen_url']
             ];     
             return true;
         }else{

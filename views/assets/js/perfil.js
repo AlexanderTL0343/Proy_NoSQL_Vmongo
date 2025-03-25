@@ -118,10 +118,10 @@ $(document).ready(function () {
     });
   });
 
+
+//EDITAR USUARIO
 $('#editaruser').on('submit', function (event) {
 event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
-
-// Mostrar un cuadro de confirmación con SweetAlert
 Swal.fire({
     title: '¿Estás seguro?',
     text: '¿Desea modificar los datos?',
@@ -131,19 +131,27 @@ Swal.fire({
     cancelButtonText: 'Cancelar',
 }).then( async (result) => {
     if (result.isConfirmed) {
-        // Si el usuario confirma, enviar los datos por AJAX
-        var formData = new FormData($('#editaruser')[0]);
+        var formData = new FormData($('#editaruser')[0]);//obtener datos del formulario
+        var file = document.getElementById("edt-imagen").files[0];//obtener imagen del formulario
+        let oldImagenUrl = formData.get("oldImagenUrl");//obtener la url de imagen del usuario actual
 
-        var file = document.getElementById("edt-imagen").files[0];
-        let oldImagenUrl = formData.get("oldImagenUrl");
+        
+        console.log("URL de imagen anterior:", oldImagenUrl);
 
-        console.log(oldImagenUrl);
+        if (file) { // Si el usuario selecciona una nueva imagen
 
-        if (file) { //SI SE SELECCIONA UNA IMAGEN EN EL EDITAR, SE ACTUALIZA
-            let newImagenUrl = await updateImageByUrl(oldImagenUrl, file);
-            formData.append("imagen", newImagenUrl);
-            console.log(newImagenUrl);
-        } else{
+            if (oldImagenUrl === "" || oldImagenUrl === " ") { // Si no hay imagen previa, subir una nueva
+                let newImagenUrl = await uploadImageAndGetUrl(file);
+                formData.append("imagen", newImagenUrl);
+                console.log("Subida nueva imagen: " + newImagenUrl);
+
+            } else { // Si ya hay una imagen previa, actualizarla
+                let newImagenUrl = await updateImageByUrl(oldImagenUrl, file);
+                formData.append("imagen", newImagenUrl);
+                console.log("Imagen actualizada: " + newImagenUrl);
+            }
+
+        } else { // Si el usuario no cambia la imagen, mantener la misma
             formData.append("imagen", oldImagenUrl);
         }
         //pendiente revisar

@@ -141,6 +141,7 @@ switch ($_GET['op']) {
     
         $modificados = $usuario->modificarUsuario();
         if ($modificados > 0) {
+            
             echo 1;
         } else {
             echo 0;
