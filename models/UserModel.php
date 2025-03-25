@@ -245,14 +245,38 @@ class User extends ConexionAtlas
         }
     }
 
-    public function iniciarSesion2($email, $contrasena){//MONGO HECHO
+    function obtenerContrasena($email){ 
         try {
+            $Conexion = self::getConexion();
+
+            //devuelve solo la contrasena
+            $usuario = $Conexion->USUARIOS->findOne(
+                ['email' => $email],
+                ['projection' => ['contrasena' => 1]] //projection es como el PROJECT de mongo
+            );
+    
+            self::desconectar();
+    
+            if ($usuario) {
+                return $usuario['contrasena']; // Devuelve el hash almacenado
+            }
+    
+            return false; // No se encontró el usuario
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            error_log("Error " . $Exception->getCode() . ": " . $Exception->getMessage());
+            return false;
+        }
+    }
+
+    public function iniciarSesion2(){//MONGO HECHO
+        try {
+            $email = $this->getEmail();
             // Obtiene la conexión a MongoDB
             $conexion = self::getConexion();
     
             // Consulta de agregación
             $res = $conexion->USUARIOS->aggregate([
-                ['$match' => ['email' => $email, 'contrasena' => $contrasena]],
+                ['$match' => ['email' => $email]],
                 [
                     '$lookup' => [
                         'from' => 'ROLES',

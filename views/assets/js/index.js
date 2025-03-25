@@ -167,19 +167,19 @@ $("#login").on("submit", function (e) {
     success: function (datos) {
       console.log(datos);
       datos = JSON.parse(datos);
-      switch (datos[0].status) {
+      switch (datos.status) {
         case true:
           limpiarFormLogin();
-          console.log(datos[0].nombreRol);
+          console.log(datos.nombreRol);
           Swal.fire({
             icon: "success",
             title: "Sesión iniciada",
-            text: "¡Bienvenido " + datos[0].nombre + "!",
+            text: "¡Bienvenido " + datos.nombre + "!",
             showConfirmButton: false,
             timer: 1200,
           }).then(() => {
             // Redirigir después de que el cuadro desaparezca
-            var sessionAdmin = datos[0].nombreRol;
+            var sessionAdmin = datos.nombreRol;
 
             if (sessionAdmin == "ADMIN") {
               window.location.href = "reportes.php";

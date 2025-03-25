@@ -1,10 +1,17 @@
 <?php
 require_once '../models/UserModel.php';
+require_once '../config/global.php';
 
 switch ($_GET['op']) {
     case 'insertarUsuario':
-        //$contrasena=(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
-       // $clavehash = hash('SHA256', trim($contrasena));
+        //-----------------------------------------------------------------------------
+        $contrasena=(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
+        //ENCRIPTAR
+        $pepper = PAPER;//variable global
+        $contrasena_peppered = hash_hmac("sha256", $contrasena, $pepper);
+        $contrasena_hashed = password_hash($contrasena_peppered, PASSWORD_ARGON2ID);
+        //-----------------------------------------------------------------------------
+
         $usuario = new User();
         $usuario->setIdRol(isset($_POST['tipoUsuario']) ? intval(trim($_POST['tipoUsuario'])): 0); //INT VAL PARA PARSEARLOS A INT
         $usuario->setIdProfesion(isset($_POST['profesion']) ? intval(trim($_POST['profesion'])) : 0);
@@ -16,11 +23,10 @@ switch ($_GET['op']) {
         $usuario->setDireccion(isset($_POST['direccion']) ? trim($_POST['direccion']) : "");
         $usuario->setTelefono(isset($_POST['telefono']) ? trim($_POST['telefono']) : 0);
         $usuario->setEmail(isset($_POST['email']) ? trim($_POST['email']) : "");
-        $usuario->setContrasena(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
+        //$usuario->setContrasena(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
+        $usuario->setContrasena($contrasena_hashed);
         $usuario->setImagenUrl(isset($_POST['imagen']) ? trim($_POST['imagen']) : ""); // Usamos la URL de la imagen
     
-
-
         if ($usuario->insertarUsuario() == true) { //true es la respuesta del modelo al insertar la cita
 
             $response = array();
@@ -40,12 +46,41 @@ switch ($_GET['op']) {
         break;
 
     case 'iniciarSesion':
-
         $usuario = new User();
-        $usuario->setEmail(isset($_POST['email']) ? trim($_POST['email']) : "");
-        $usuario->setContrasena(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
+        $vEmail = isset($_POST['email']) ? trim($_POST['email']) : "";
+        $vContrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "";
 
+        //----------------------------------------------------------------------------
+        $pepper = PAPER;
+        $vContrasena_peppered = hash_hmac("sha256", $vContrasena, $pepper);
+        $vContrasena_hashed = $usuario->obtenerContrasena($vEmail);
+        
+        if (password_verify($vContrasena_peppered, $vContrasena_hashed)) {
+            $usuario->setEmail($vEmail);
 
+            $usuario->iniciarSesion2();
+
+            $response = [
+                "status" => true,
+                "message" => "Sesión iniciada",
+                "nombre" => $_SESSION['usuario']['nombre'],
+                "nombreRol" => $_SESSION['usuario']['nombreRol'] //revisar si eliminar
+            ];
+            echo json_encode($response);
+            exit;
+        }
+        else {
+            $response = [
+                "status" => false,
+                "message" => "Error al iniciar sesión"
+            ];
+            echo json_encode($response);
+        }
+
+        //-----------------------------------------------------------------------------
+        //$usuario->setEmail(isset($_POST['email']) ? trim($_POST['email']) : "");
+        //$usuario->setContrasena(isset($_POST['contrasena']) ? trim($_POST['contrasena']) : "");
+        /*
         if ($usuario->iniciarSesion2($usuario->getEmail(), $usuario->getContrasena()) == true) {
 
             $response = array();
@@ -55,7 +90,6 @@ switch ($_GET['op']) {
                 "nombre" => $_SESSION['usuario']['nombre'],
                 "nombreRol" => $_SESSION['usuario']['nombreRol'] //revisar si eliminar
             ];
-
             echo json_encode($response);
             exit;
         } else {
@@ -65,7 +99,7 @@ switch ($_GET['op']) {
                 "message" => "Error al iniciar sesión"
             ];
             echo json_encode($response);
-        }
+        }*/
         break;
 
     case 'obtenerProfesiones':
