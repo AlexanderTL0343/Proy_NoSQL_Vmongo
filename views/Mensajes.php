@@ -25,7 +25,7 @@ include("./assets/fragmentos/head.php");
             </button>
           </div>
 
-          <ul class="list-group" id="listaChats">
+          <ul class="list-group listaChats" id="listaChats">
             <!-- Lista de usuarios de chat (sin cambios) -->
           </ul>
         </div>

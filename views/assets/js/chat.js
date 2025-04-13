@@ -1,4 +1,4 @@
-/*
+
 // Conectar al servidor WebSocket
 let socket = new WebSocket('ws://localhost:8080'); // Cambia la URL si es necesario
 
@@ -6,6 +6,17 @@ let socket = new WebSocket('ws://localhost:8080'); // Cambia la URL si es necesa
 let chatBox = document.getElementById('chat-box');
 let messageInput = document.getElementById('message-input');
 let sendMessageButton = document.getElementById('send-message');
+let currentChatId = null;
+
+// Manejar la conexión WebSocket abierta
+socket.onopen = function(event) {
+  console.log("Conexión WebSocket establecida");
+};
+
+function obtenerChatActivo() {
+  console.log($(document).getElementByClassName("listaChats"));
+  return document.querySelector('.chat-element.active').dataset.chatId;
+}
 
 // Manejar la conexión WebSocket abierta
 socket.onopen = function(event) {
@@ -14,12 +25,17 @@ socket.onopen = function(event) {
 
 // Manejar mensajes entrantes
 socket.onmessage = function(event) {
-  let message = event.data; // Mensaje recibido
-  let messageElement = document.createElement('div');
-  messageElement.classList.add('message-box', 'message-received');
-  messageElement.textContent = message;
-  chatBox.appendChild(messageElement);
-  chatBox.scrollTop = chatBox.scrollHeight; // Desplazar al final del chat
+  let data = JSON.parse(event.data); // Convertir el mensaje a objeto
+  let chatActivo = obtenerChatActivo();
+
+  // Verificar si el mensaje pertenece al chat activo
+  if (data.id_chat_fk === chatActivo) {
+    let messageElement = document.createElement('div');
+    messageElement.classList.add('message-box', data.id_emisor_fk == obtenerIdUsuarioActual() ? 'message-sent' : 'message-received');
+    messageElement.textContent = data.mensaje;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight; // Desplazar al final del chat
+  }
 };
 
 // Manejar errores
@@ -36,7 +52,14 @@ socket.onclose = function(event) {
 sendMessageButton.addEventListener('click', function() {
   let message = messageInput.value.trim();
   if (message) {
-    socket.send(message); // Enviar el mensaje al servidor
+    let chatId = obtenerChatActivo();
+    let data = {
+      id_chat_fk: chatId,
+      id_emisor_fk: obtenerIdUsuarioActual(),
+      mensaje: message
+    };
+    socket.send(JSON.stringify(data)); // Enviar el mensaje como JSON
+
     let messageElement = document.createElement('div');
     messageElement.classList.add('message-box', 'message-sent');
     messageElement.textContent = message;
@@ -52,7 +75,7 @@ messageInput.addEventListener('keydown', function(event) {
     sendMessageButton.click();
   }
 });
-*/
+
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 $(document).ready(function () {
@@ -159,7 +182,7 @@ function generarCard(chat, idUsuarioActual) {//idUsuarioActual es el id del remi
         break;
     }
     return `
-      <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+      <li class="chat-element list-group-item d-flex justify-content-between align-items-center p-2" data-chatId="${idChat}">
         <div class="d-flex align-items-center">
           <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
             <span>${userAux.nombreUsuario.charAt(0)}</span>

@@ -22,14 +22,196 @@ Creación BSD:
 use proyectoMongo;
 
 //------------------------------------------
-
 Creación de COLECCIONES:
-db.createCollection("ROLES");
-db.createCollection("ESTADOS");
-db.createCollection("CATEGORIAS");
-db.createCollection("PROFESIONES");
-db.createCollection("USUARIOS");
-db.createCollection("PUBLICACIONES");
+
+db.createCollection("ROLES",{
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "rol" ],
+            properties: {
+                rol: {
+                    bsonType: "string"
+                }
+            }
+        }
+    }
+});
+
+db.createCollection("ESTADOS", {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "estado" ],
+            properties: {
+                estado: {
+                    bsonType: "string"
+                }
+            }
+        }
+    }
+});
+
+db.createCollection("CATEGORIAS",{
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "nombreCategoria", "descripcion" ],
+            properties: {
+                nombreCategoria: {
+                    bsonType: "string"
+                },
+                descripcion: {
+                    bsonType: "string"
+                }
+            }
+        }
+    }
+});
+
+db.createCollection("PROFESIONES",{
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "nombreProfesion" ],
+            properties: {
+                nombreProfesion: {
+                    bsonType: "string"
+                }
+            }
+        }
+    }
+});
+
+db.createCollection("USUARIOS",{
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "id_rol_fk", "id_estado_fk", "id_profesion_fk", "cedulaUsuario", "nombreUsuario", "apellido1", "apellido2", "edad", "direccion", "telefono", "email", "contrasena", "facebook", "instagram", "fechaRegistro", "imagen_url" ],
+            properties: {
+                id_rol_fk: {
+                    bsonType: "int"
+                },
+                id_estado_fk: {
+                    bsonType: "int"
+                },
+                id_profesion_fk: {
+                    bsonType: "int"
+                },
+                cedulaUsuario: {
+                    bsonType: "string"
+                },
+                nombreUsuario: {
+                    bsonType: "string"
+                },
+                apellido1: {
+                    bsonType: "string"
+                },
+                apellido2: {
+                    bsonType: "string"
+                },
+                edad: {
+                    bsonType: "int"
+                },
+                direccion: {
+                    bsonType: "string"
+                },
+                telefono: {
+                    bsonType: "string"
+                },
+                email: {
+                    bsonType: "string"
+                },
+                contrasena: {
+                    bsonType: "string"
+                },
+                facebook: {
+                    bsonType: "string"
+                },
+                instagram: {
+                    bsonType: "string"
+                },
+                fechaRegistro: {
+                    bsonType: "date"
+                },
+                imagen_url: {
+                    bsonType: "string"
+                }
+            }
+        }
+    }
+});
+
+db.createCollection("PUBLICACIONES",{
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "id_estado_fk", "id_categoria_fk", "id_usuario_fk", "titulo_publicacion", "descripcion", "fecha_publicacion", "precio_aprox", "imagen_url", "ubicacion", "calificaciones" ],
+            properties: {
+                id_estado_fk: {
+                    bsonType: "int"
+                },
+                id_categoria_fk: {
+                    bsonType: "int"
+                },
+                id_usuario_fk: {
+                    bsonType: "int"
+                },
+                titulo_publicacion: {
+                    bsonType: "string"
+                },
+                descripcion: {
+                    bsonType: "string"
+                },
+                fecha_publicacion: {
+                    bsonType: "date"
+                },
+                precio_aprox: { //revisar tipo de dato
+                    bsonType: "double"
+                },
+                imagen_url: {
+                    bsonType: "string"
+                },
+                ubicacion: {
+                    bsonType: "object",
+                    required: [ "ciudad", "provincia", "direccion_detallada" ],
+                    properties: {
+                        ciudad: {
+                            bsonType: "string"
+                        },
+                        provincia: {
+                            bsonType: "string"
+                        },
+                        direccion_detallada: {
+                            bsonType: "string"
+                        }
+                    }
+                },
+                calificaciones: { //revisar si son obligatorios los campos
+                    bsonType: "array",
+                    items: {
+                        bsonType: "object",
+                        required: [ "id_usuario_fk", "calificacion", "comentario", "fecha" ],
+                        properties: {
+                            id_usuario_fk: {
+                                bsonType: "int"
+                            },
+                            calificacion: {
+                                bsonType: "int"
+                            },
+                            comentario: {
+                                bsonType: "string"
+                            },
+                            fecha: {
+                                bsonType: "date"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
 -- --
 db.createCollection("CHATS");
 db.createCollection("MENSAJES");
