@@ -35,7 +35,7 @@ include("./assets/fragmentos/head.php");
           <!-- Encabezado del chat -->
           <div class="chat-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-              <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                 <span id="chat-inicial"></span>
               </div>
               <div>

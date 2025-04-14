@@ -29,10 +29,7 @@ function enviarMensaje(){
       //fechaDeEnvio: new Date(), Se agrega en el MODEL
       //idEstadoFk: 1 Se agrega en el MODEL
     }
-
-    console.log(jsonDatos);
     //console.log(JSON.stringify(jsonDatos));
-
     $.ajax({
       url: "../controllers/chatsController.php?op=enviarMensaje",
       type: "POST",
@@ -104,7 +101,16 @@ document.getElementById("listaChats").addEventListener("click", function (event)
 });
 
 function mostrarChat(idChat, usuarioDestino) {
-  document.getElementById("chat-inicial").textContent = usuarioDestino.nombreUsuario.charAt(0);
+
+  if(usuarioDestino.imagen_url == ""){
+    document.getElementById("chat-inicial").textContent = usuarioDestino.nombreUsuario.charAt(0);
+  }else{
+    let html = `<img src="${usuarioDestino.imagen_url}" alt="avatar" class="rounded-circle img-fluid" style="width: 60px; height: 60px; object-fit: cover;">`;
+    document.getElementById("chat-inicial").innerHTML = html;
+  }
+
+  
+
   document.getElementById("chat-name").textContent = usuarioDestino.nombreUsuario;
   document.getElementById("chat-box").innerHTML = ""; // Limpia el chat anterior
   listarMensajes(idChat);
@@ -177,11 +183,16 @@ function generarCard(chat, idUsuarioActual) {//idUsuarioActual es el id del remi
         userAux = usuario1;
         break;
     }
+    //<span>${userAux.nombreUsuario.charAt(0)}</span>
     return `
       <li class="chat-element list-group-item d-flex justify-content-between align-items-center p-2" data-chatId="${idChat}">
         <div class="d-flex align-items-center">
           <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-            <span>${userAux.nombreUsuario.charAt(0)}</span>
+          ${
+            userAux.imagen_url === ""
+              ? `<span>${userAux.nombreUsuario.charAt(0)}</span>`
+              : `<img src="${userAux.imagen_url}" alt="avatar" class="rounded-circle img-fluid" style="width: 40px; height: 40px; object-fit: cover;">`
+          }
           </div>
           <div style="margin-left: 8px;">
             <h5 class="mb-0">${userAux.nombreUsuario}</h5>
