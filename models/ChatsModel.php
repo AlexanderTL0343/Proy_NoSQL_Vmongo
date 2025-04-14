@@ -123,6 +123,7 @@
                     foreach ($res as $mensaje) {
                         $mensaje['_id'] = (string) $mensaje['_id'];
                         $mensaje['id_chat_fk'] = (string) $mensaje['id_chat_fk'];
+                        $mensaje['id_emisor_fk'] = (string) $mensaje['id_emisor_fk']; // Agrega esta línea
                     }
     
                     return $res;

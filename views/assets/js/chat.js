@@ -8,28 +8,40 @@ let messageInput = document.getElementById('message-input');
 let sendMessageButton = document.getElementById('send-message');
 let currentChatId = null;
 
-// Manejar la conexión WebSocket abierta
-socket.onopen = function(event) {
-  console.log("Conexión WebSocket establecida");
-};
-
 function obtenerChatActivo() {
-  console.log($(document).getElementByClassName("listaChats"));
-  return document.querySelector('.chat-element.active').dataset.chatId;
+  document.addEventListener("click", function(event) {
+    // Verifica si el clic fue en un botón con la clase "btnVerCHAT"
+    if (event.target.closest(".btnVerCHAT")) {
+        // Encuentra el elemento <li> más cercano (padre)
+        var chatElement = event.target.closest(".chat-element");
+  
+        // Obtiene el valor de data-chatId
+        var chatId = chatElement.getAttribute("data-chatId");
+  
+        console.log("Chat ID:", chatId);
+  
+        return chatId;
+    }
+  });
+}
+
+function obtenerIdUsuarioActual() {
+  return document.getElementById("idUserActual").getAttribute("data-idUser");
 }
 
 // Manejar la conexión WebSocket abierta
-socket.onopen = function(event) {
-  console.log("Conexión WebSocket establecida");
-};
+socket.onopen = () => console.log("🟢 WebSocket conectado");
 
 // Manejar mensajes entrantes
 socket.onmessage = function(event) {
   let data = JSON.parse(event.data); // Convertir el mensaje a objeto
+
+  console.log("data: ", data);
+
   let chatActivo = obtenerChatActivo();
 
   // Verificar si el mensaje pertenece al chat activo
-  if (data.id_chat_fk === chatActivo) {
+  if (data.room === chatActivo) {
     let messageElement = document.createElement('div');
     messageElement.classList.add('message-box', data.id_emisor_fk == obtenerIdUsuarioActual() ? 'message-sent' : 'message-received');
     messageElement.textContent = data.mensaje;
@@ -54,10 +66,16 @@ sendMessageButton.addEventListener('click', function() {
   if (message) {
     let chatId = obtenerChatActivo();
     let data = {
-      id_chat_fk: chatId,
-      id_emisor_fk: obtenerIdUsuarioActual(),
-      mensaje: message
+      type: "message",
+      room: chatId,
+      from: obtenerIdUsuarioActual(),
+      mensaje: message,
+      fecha: new Date().toLocaleDateString(),
+      hora: new Date().toLocaleTimeString()
     };
+
+    console.log("data para enviar: ", data);
+
     socket.send(JSON.stringify(data)); // Enviar el mensaje como JSON
 
     let messageElement = document.createElement('div');
@@ -234,7 +252,7 @@ function listarMensajes(idChat) {
 
   let usuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
 
-  console.log(usuarioActual);
+  console.log("Usuario actual "+usuarioActual);
 
   $.ajax({
     url: "../controllers/chatsController.php?op=obtenerMensajes",
@@ -251,6 +269,8 @@ function listarMensajes(idChat) {
           break;
         case false:
           Swal.fire({
+            position: "top-end",
+            backdrop: false,
             icon: "error",
             title: "Error al obtener los mensajes",
             text: "Revisa los errores y vuelve a intentarlo.",
@@ -279,12 +299,12 @@ function agregarMensajesAlChat(mensajes, idUsuarioActual) {
   mensajes.forEach((mensaje) => {
     let messageElement = document.createElement("div");
     // Diferenciar si el mensaje fue enviado por el usuario actual o por otro
+
     if (String(mensaje.id_emisor_fk) === String(idUsuarioActual)) {
       messageElement.classList.add("message-box", "message-sent");
     } else {
       messageElement.classList.add("message-box", "message-received");
     }
-
     // Agregar el contenido del mensaje
     messageElement.textContent = mensaje.mensaje;
     chatBox.appendChild(messageElement);
