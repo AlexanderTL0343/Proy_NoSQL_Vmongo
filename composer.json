@@ -1,7 +1,5 @@
 {
     "require": {
-        "cboden/ratchet": "^0.4.4",
-        "mongodb/mongodb": "^1.21",
-        "supabase/storage-php": "^0.0.3"
+        "mongodb/mongodb": "^1.21"
     }
 }

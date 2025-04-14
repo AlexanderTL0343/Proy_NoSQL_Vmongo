@@ -224,6 +224,37 @@
                 return false;
             }    
         }
+
+        public function insertarMensaje($data){
+            try {
+                $Conexion = self::getConexion();
+
+                $msj = json_decode($data);
+
+                $mensaje = [
+                    'id_chat_fk' => new \MongoDB\BSON\ObjectId($msj->idChat),
+                    'id_emisor_fk' =>new \MongoDB\BSON\ObjectId($msj->emisor) ,
+                    'mensaje' => $msj->mensaje,
+                    'fecha_envio' =>  new MongoDB\BSON\UTCDateTime(),
+                    'id_estado_fk' => 1
+                ];
+
+                $res = $Conexion->MENSAJES->insertOne($mensaje);
+
+                self::desconectar();
+
+                if($res->getInsertedCount() == 1){
+                    return true;
+                }else{
+                    return false;
+                }
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al insertar mensaje: " . $e->getMessage());
+                return false;
+            }
+        }
+
         /*
         function obtenerChat($id){
             try {

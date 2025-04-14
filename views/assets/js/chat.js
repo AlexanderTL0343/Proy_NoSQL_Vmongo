@@ -1,120 +1,99 @@
+var idChatActualTemporal;
+//----------
 
-// Conectar al servidor WebSocket
-let socket = new WebSocket('ws://localhost:8080'); // Cambia la URL si es necesario
-
-// Elementos del DOM
-let chatBox = document.getElementById('chat-box');
-let messageInput = document.getElementById('message-input');
-let sendMessageButton = document.getElementById('send-message');
-let currentChatId = null;
-
-function obtenerChatActivo() {
-  document.addEventListener("click", function(event) {
-    // Verifica si el clic fue en un botón con la clase "btnVerCHAT"
-    if (event.target.closest(".btnVerCHAT")) {
-        // Encuentra el elemento <li> más cercano (padre)
-        var chatElement = event.target.closest(".chat-element");
-  
-        // Obtiene el valor de data-chatId
-        var chatId = chatElement.getAttribute("data-chatId");
-  
-        console.log("Chat ID:", chatId);
-  
-        return chatId;
-    }
-  });
-}
-
-function obtenerIdUsuarioActual() {
-  return document.getElementById("idUserActual").getAttribute("data-idUser");
-}
-
-// Manejar la conexión WebSocket abierta
-socket.onopen = () => console.log("🟢 WebSocket conectado");
-
-// Manejar mensajes entrantes
-socket.onmessage = function(event) {
-  let data = JSON.parse(event.data); // Convertir el mensaje a objeto
-
-  console.log("data: ", data);
-
-  let chatActivo = obtenerChatActivo();
-
-  // Verificar si el mensaje pertenece al chat activo
-  if (data.room === chatActivo) {
-    let messageElement = document.createElement('div');
-    messageElement.classList.add('message-box', data.id_emisor_fk == obtenerIdUsuarioActual() ? 'message-sent' : 'message-received');
-    messageElement.textContent = data.mensaje;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight; // Desplazar al final del chat
-  }
-};
-
-// Manejar errores
-socket.onerror = function(error) {
-  console.error("Error en WebSocket:", error);
-};
-
-// Manejar cierre de conexión
-socket.onclose = function(event) {
-  console.log("Conexión WebSocket cerrada");
-};
-
-// Enviar un mensaje
-sendMessageButton.addEventListener('click', function() {
-  let message = messageInput.value.trim();
-  if (message) {
-    let chatId = obtenerChatActivo();
-    let data = {
-      type: "message",
-      room: chatId,
-      from: obtenerIdUsuarioActual(),
-      mensaje: message,
-      fecha: new Date().toLocaleDateString(),
-      hora: new Date().toLocaleTimeString()
-    };
-
-    console.log("data para enviar: ", data);
-
-    socket.send(JSON.stringify(data)); // Enviar el mensaje como JSON
-
-    let messageElement = document.createElement('div');
-    messageElement.classList.add('message-box', 'message-sent');
-    messageElement.textContent = message;
-    chatBox.appendChild(messageElement);
-    messageInput.value = ''; // Limpiar el campo de texto
-    chatBox.scrollTop = chatBox.scrollHeight; // Desplazar al final del chat
-  }
-});
-
-// Enviar mensaje con Enter
-messageInput.addEventListener('keydown', function(event) {
-  if (event.key === 'Enter') {
-    sendMessageButton.click();
-  }
-});
-
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
 $(document).ready(function () {
   listarChats();
   listarUsuarios();//se lista para agregar chats
+  $(document).on("click", "#send-message", enviarMensaje);
 });
 
-/*
-document.getElementById("listaChats").addEventListener("click", function (event) {
-  let boton = event.target.closest("button"); // Detecta si se hizo clic en un botón de chat
-  if (boton) {
-    let userAux = JSON.parse(boton.dataset.chat); // Obtener y parsear el JSO
-    mostrarChat(boton.id, userAux);
-  }
-});*/
+document.getElementById("actualizar-mensaje").addEventListener("click", function () {
+  listarMensajes(idChatActualTemporal);
+});
 
+//Enviar mensaje
+function enviarMensaje(){
+  let mensaje = document.getElementById("message-input").value;
+  if(mensaje){
+    let idChat = idChatActualTemporal
+    let idUsuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
+    //console.log(idChat);
+    //console.log(idUsuarioActual);
+    
+    document.getElementById("message-input").value = "";
+
+    let jsonDatos = {
+      idChat: idChat,
+      emisor: idUsuarioActual,
+      mensaje: mensaje,
+      //fechaDeEnvio: new Date(), Se agrega en el MODEL
+      //idEstadoFk: 1 Se agrega en el MODEL
+    }
+
+    console.log(jsonDatos);
+    //console.log(JSON.stringify(jsonDatos));
+
+    $.ajax({
+      url: "../controllers/chatsController.php?op=enviarMensaje",
+      type: "POST",
+      data: { data: JSON.stringify(jsonDatos) },
+      success: function (response) {
+        response = JSON.parse(response);
+        switch (response.status) {
+          case true:
+            //console.log(response.datos);
+            listarMensajes(idChatActualTemporal);
+            break;
+          case false:
+            Swal.fire({
+              position: "top-end",
+              backdrop: false,
+              icon: "error",
+              title: "Error al enviar el mensaje",
+              text: "Revisa los errores y vuelve a intentarlo.",
+              showConfirmButton: false,
+              timer: 1800,
+            });
+            break;
+        }
+      },
+      error: function (err) {
+        console.error("Error en la solicitud AJAX:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Error al listar los mensajes",
+          text: "Revisa los errores y vuelve a intentarlo.",
+          showConfirmButton: false,
+          timer: 1800,
+        });
+      },
+    });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//-------------------------------------------------------------------------------------------
+//Para mostrar el chat
 document.getElementById("listaChats").addEventListener("click", function (event) {
   let boton = event.target.closest("button"); // Detecta si se hizo clic en un botón de chat
   if (boton && boton.classList.contains("btnVerCHAT")) { // Verifica que el botón tenga la clase correcta
     let userAux = JSON.parse(boton.dataset.chat); // Obtener y parsear el JSON
     mostrarChat(boton.id, userAux);
+    idChatActualTemporal = boton.id;//Asigna el id del chat a la variable temporal
   }
 
   if (boton && boton.classList.contains("btnEliminarCHAT")) { // Verifica que el botón tenga la clase correcta
@@ -122,7 +101,6 @@ document.getElementById("listaChats").addEventListener("click", function (event)
     console.log(idChat);
     eliminarChat(idChat);
   }
-
 });
 
 function mostrarChat(idChat, usuarioDestino) {
@@ -252,7 +230,7 @@ function listarMensajes(idChat) {
 
   let usuarioActual = document.getElementById("idUserActual").getAttribute("data-idUser");
 
-  console.log("Usuario actual "+usuarioActual);
+  //console.log("Usuario actual "+usuarioActual);
 
   $.ajax({
     url: "../controllers/chatsController.php?op=obtenerMensajes",
@@ -268,15 +246,7 @@ function listarMensajes(idChat) {
 
           break;
         case false:
-          Swal.fire({
-            position: "top-end",
-            backdrop: false,
-            icon: "error",
-            title: "Error al obtener los mensajes",
-            text: "Revisa los errores y vuelve a intentarlo.",
-            showConfirmButton: false,
-            timer: 1800,
-          });
+          document.getElementById("chat-box").innerHTML = "<div class='alert alert-secondary' role='alert'>No hay mensajes mensajes</div>";
           break;
       }
     },
@@ -293,7 +263,11 @@ function listarMensajes(idChat) {
   });
 }
 
+//muestra los mensajes de cada chat
 function agregarMensajesAlChat(mensajes, idUsuarioActual) {
+  //limpiar box
+  document.getElementById("chat-box").innerHTML = "";
+
   let chatBox = document.getElementById("chat-box");
 
   mensajes.forEach((mensaje) => {
@@ -425,7 +399,6 @@ $(document).ready(function () {
     });
   });
 });
-
 
 // Eliminar chat
 function eliminarChat(idChat){

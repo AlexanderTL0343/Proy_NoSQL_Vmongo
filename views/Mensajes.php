@@ -36,11 +36,11 @@ include("./assets/fragmentos/head.php");
           <div class="chat-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
               <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                <span id="chat-inicial">J</span>
+                <span id="chat-inicial"></span>
               </div>
               <div>
-                <h5 class="mb-0" id="chat-name">Juan Pérez</h5>
-                <small class="text-success" id="chat-status">En línea</small>
+                <h5 class="mb-0" id="chat-name"></h5>
+                <small class="text-success" id="chat-status"></small>
               </div>
             </div>
           </div>
@@ -54,9 +54,15 @@ include("./assets/fragmentos/head.php");
           <div class="chat-input">
             <div class="input-group">
               <input id="message-input" type="text" class="form-control" placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje...">
+              
+              <button class="btn btn-secondary ms-2" id="actualizar-mensaje" type="button" title="Actualizar mensajes">
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+              
               <button class="btn btn-primary ms-2" id="send-message" type="button">
                 <i class="bi bi-send-fill"></i>
               </button>
+            
             </div>
           </div>
         </div>

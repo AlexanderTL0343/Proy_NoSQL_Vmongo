@@ -428,7 +428,6 @@ db.MENSAJES.insertMany([
         id_emisor_fk: 1,
         mensaje: "¡Hola! ¿Cómo estás?",
         fecha_envio: new Date("2025-03-06T10:05:00Z"),
-        tipo: "texto",
         id_estado_fk: 1
     },
     {
@@ -437,7 +436,6 @@ db.MENSAJES.insertMany([
         id_emisor_fk: 2,
         mensaje: "Estoy bien, gracias. ¿Y tú?",
         fecha_envio: new Date("2025-03-06T10:06:00Z"),
-        tipo: "texto",
         id_estado_fk: 1
     }
 ]);

@@ -80,27 +80,7 @@
             echo json_encode($response);
             break;
 
-        case 'obtenerMensajes':
-            $chat = new Chat();
-            $res = $chat->obtenerMensajes($_GET['idChat']);
-
-            if($res){
-                $response = array();
-                $response = [
-                    "status" => true,
-                    "message" => "Mensajes obtenidos",
-                    "datos" => $res
-                ];
-            }else{
-                $response = array();
-                $response = [
-                    "status" => false,
-                    "message" => "Error al obtener los mensajes"
-                ];
-            }
-
-            echo json_encode($response);
-            break;
+        
 
         case 'eliminarChat':
             $Chat = new Chat();
@@ -122,6 +102,48 @@
 
             echo json_encode($response);
             break;
-    }
+        case 'obtenerMensajes':
+            $chat = new Chat();
+            $res = $chat->obtenerMensajes($_GET['idChat']);
+
+            if($res){
+                $response = array();
+                $response = [
+                    "status" => true,
+                    "message" => "Mensajes obtenidos",
+                    "datos" => $res
+                ];
+            }else{
+                $response = array();
+                $response = [
+                    "status" => false,
+                    "message" => "Error al obtener los mensajes"
+                ];
+            }
+
+            echo json_encode($response);
+            break;
+  
+        case 'enviarMensaje':
+            $chat = new Chat();
+            $res = $chat->insertarMensaje($_POST['data']);
+            if($res){
+                $response = array();
+                $response = [
+                    "status" => true,
+                    "message" => "Mensaje enviado exitosamente",
+                ];
+            }else{
+                $response = array();
+                $response = [
+                    "status" => false,
+                    "message" => "Error al enviar el mensaje"
+                ];
+            }
+            echo json_encode($response);
+        
+            
+        }
+
 
 ?>
