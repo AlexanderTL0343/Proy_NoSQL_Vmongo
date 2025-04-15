@@ -13,8 +13,8 @@ switch ($_GET['op']) {
         //-----------------------------------------------------------------------------
 
         $usuario = new User();
-        $usuario->setIdRol(isset($_POST['tipoUsuario']) ? intval(trim($_POST['tipoUsuario'])): 0); //INT VAL PARA PARSEARLOS A INT
-        $usuario->setIdProfesion(isset($_POST['profesion']) ? intval(trim($_POST['profesion'])) : 0);
+        $usuario->setIdRol(isset($_POST['tipoUsuario']) ? trim($_POST['tipoUsuario']): 0); //INT VAL PARA PARSEARLOS A INT
+        $usuario->setIdProfesion(isset($_POST['profesion']) ? trim($_POST['profesion']) : 0);
         $usuario->setCedula(isset($_POST['cedula']) ? trim($_POST['cedula']) : "");
         $usuario->setNombre(isset($_POST['nombre']) ? trim($_POST['nombre']) : "");
         $usuario->setApellido1(isset($_POST['apellido1']) ? trim($_POST['apellido1']) : "");
@@ -58,14 +58,20 @@ switch ($_GET['op']) {
         if (password_verify($vContrasena_peppered, $vContrasena_hashed)) {
             $usuario->setEmail($vEmail);
 
-            $usuario->iniciarSesion2();
-
-            $response = [
-                "status" => true,
-                "message" => "Sesión iniciada",
-                "nombre" => $_SESSION['usuario']['nombre'],
-                "nombreRol" => $_SESSION['usuario']['nombreRol'] //revisar si eliminar
-            ];
+            if ($usuario->iniciarSesion2()) {
+                $response = [
+                    "status" => true,
+                    "message" => "Sesión iniciada",
+                    "nombre" => $_SESSION['usuario']['nombre'] ,
+                    "nombreRol" => $_SESSION['usuario']['nombreRol']
+                ];
+            } else {
+                $response = [
+                    "status" => false,
+                    "message" => "Error al obtener los datos del usuario"
+                ];
+            }
+        
             echo json_encode($response);
             exit;
         }

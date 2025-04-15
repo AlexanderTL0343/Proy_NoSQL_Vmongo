@@ -113,6 +113,8 @@ $(document).ready(function () {
       }
     }
 
+    console.log(formData);
+
     $.ajax({
       url: "../controllers/UserController.php?op=insertarUsuario",
       type: "POST",
@@ -137,6 +139,7 @@ $(document).ready(function () {
 
           case false:
             alert("Error al registrar el usuario");
+            alert(response[0].message);
             break;
         }
       },
@@ -195,7 +198,7 @@ $("#login").on("submit", function (e) {
         case false:
           Swal.fire({
             icon: "error",
-            title: "Error al iniciar sesión",
+            title: datos.message,
             text: "Usuario o contraseña incorrecta!",
           });
           break;

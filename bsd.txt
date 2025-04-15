@@ -4,17 +4,16 @@ ESTE TXT TIENE EL PROPOSITO DE MANTENER ACTUALIZADO EL SCRIPT DE proyectoMongo
 
 //------------------------------------------
 COMENTARIOS:
-****pendiente los insert de CALIFICACIONES, REPORTES, HISTORIAL_TRABAJOS
+    ESTE CODIGO NO ESTA IMPLEMENTADO EN LA BSD PRINCIPAL,
+    ESTA EN UNA BSD DE PRUEBAS PARA VALIDAR ERRORES FALTANTES Y UNA VEZ RESUELTOS 
+    SE MOVERA A LA BSD PRINCIPAL
+
 
 INSERT HECHOS:
   -ROLES
   -ESTADOS
   -CATEGORIAS
   -PROFESIONES
-  -USUARIOS
-  -POSTULACIONES
-  -CHATS
-  -MENSAJES
 
 //------------------------------------------
 
@@ -90,13 +89,22 @@ db.createCollection("USUARIOS",{
             required: [ "id_rol_fk", "id_estado_fk", "id_profesion_fk", "cedulaUsuario", "nombreUsuario", "apellido1", "apellido2", "edad", "direccion", "telefono", "email", "contrasena", "facebook", "instagram", "fechaRegistro", "imagen_url" ],
             properties: {
                 id_rol_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 id_estado_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 id_profesion_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 cedulaUsuario: {
                     bsonType: "string"
@@ -149,13 +157,22 @@ db.createCollection("PUBLICACIONES",{
             required: [ "id_estado_fk", "id_categoria_fk", "id_usuario_fk", "titulo_publicacion", "descripcion", "fecha_publicacion", "precio_aprox", "imagen_url", "ubicacion", "calificaciones" ],
             properties: {
                 id_estado_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 id_categoria_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 id_usuario_fk: {
-                    bsonType: "int"
+                    anyOf: [
+                        { bsonType: "int" },
+                        { bsonType: "objectId" }
+                    ]
                 },
                 titulo_publicacion: {
                     bsonType: "string"
@@ -194,7 +211,10 @@ db.createCollection("PUBLICACIONES",{
                         required: [ "id_usuario_fk", "calificacion", "comentario", "fecha" ],
                         properties: {
                             id_usuario_fk: {
-                                bsonType: "int"
+                                anyOf: [
+                                    { bsonType: "int" },
+                                    { bsonType: "objectId" }
+                                ]
                             },
                             calificacion: {
                                 bsonType: "int"
@@ -212,7 +232,7 @@ db.createCollection("PUBLICACIONES",{
         }
     }
 });
--- --
+
 db.createCollection("CHATS");
 db.createCollection("MENSAJES");
 db.createCollection("CALIFICACIONES");
@@ -221,8 +241,8 @@ db.createCollection("REPORTES");
 db.createCollection("HISTORIAL_TRABAJOS");
 
 //------------------------------------------
-
 Creación de DOCUMENTOS:
+
 db.ROLES.insertMany([
        { _id: 1, rol: "ADMIN" },
        { _id: 2, rol: "POSTULANTE" },
@@ -235,158 +255,35 @@ db.ESTADOS.insertMany([
 ]);
  
 db.CATEGORIAS.insertMany([
-{ _id: 1, nombreCategoria: "CUIDADO-NINOS", descripcion: "Servicios de Cuidado de Niños" },
-{ _id: 2, nombreCategoria: "JARDINERIA", descripcion: "Servicios de Jardinería" },
-{ _id: 3, nombreCategoria: "ARREGLO-ROPA", descripcion: "Servicios de Arreglos de Ropa" },
-{ _id: 4, nombreCategoria: "LIMPIEZA", descripcion: "Servicios de Limpieza" },
-{ _id: 5, nombreCategoria: "CUIDADO-MASCOTAS", descripcion: "Servicios de Cuidado de Mascotas"},
-{_id: 6,nombreCategoria:"REPARACIONES",descripcion:"Servicios de Reparaciones y Mantenimiento"},
-{ _id: 7, nombreCategoria: "COMIDA-CATERING", descripcion: "Servicios de Comida y Catering" },
-{ _id: 8, nombreCategoria: "VENTAS", descripcion: "Servicios de Ventas" },
-{_id: 9, nombreCategoria:"ASISTENCIA-PERSONAL",descripcion: "Servicios de Asistencia Personal"},
-{ _id: 10, nombreCategoria: "BELLEZA", descripcion: "Servicios de Belleza" },
-{ _id: 11, nombreCategoria: "OTROS-EMPLEADOS", descripcion: "Otros Empleos" }
+{nombreCategoria: "CUIDADO-NINOS", descripcion: "Servicios de Cuidado de Niños" },
+{nombreCategoria: "JARDINERIA", descripcion: "Servicios de Jardinería" },
+{nombreCategoria: "ARREGLO-ROPA", descripcion: "Servicios de Arreglos de Ropa" },
+{nombreCategoria: "LIMPIEZA", descripcion: "Servicios de Limpieza" },
+{nombreCategoria: "CUIDADO-MASCOTAS", descripcion: "Servicios de Cuidado de Mascotas"},
+{nombreCategoria:"REPARACIONES",descripcion:"Servicios de Reparaciones y Mantenimiento"},
+{nombreCategoria: "COMIDA-CATERING", descripcion: "Servicios de Comida y Catering" },
+{nombreCategoria: "VENTAS", descripcion: "Servicios de Ventas" },
+{nombreCategoria:"ASISTENCIA-PERSONAL",descripcion: "Servicios de Asistencia Personal"},
+{nombreCategoria: "BELLEZA", descripcion: "Servicios de Belleza" },
+{nombreCategoria: "OTROS-EMPLEADOS", descripcion: "Otros Empleos" }
 ]);
  
 db.PROFESIONES.insertMany([
-  { _id: 1, nombreProfesion: "Especialista en tecnología" },
-  { _id: 2, nombreProfesion: "Ingeniero" },
-  { _id: 3, nombreProfesion: "Profesional de la salud" },
-  { _id: 4, nombreProfesion: "Operador de transporte" }
-]);
-
-
-db.USUARIOS.insertMany([
-    { 
-        _id: 1, 
-        id_rol_fk: 1, 
-        id_estado_fk: 1, 
-        id_profesion_fk: 1, 
-        cedulaUsuario: "123456789", 
-        nombreUsuario: "Brandon", 
-        apellido1: "Aguirre",
-        apellido2: "Ortiz",
-        edad: 19,
-        direccion: "Calle Ficticia 123",
-        telefono: "987654321",
-        email: "test",
-        contrasena: "test",
-        facebook: "",
-        instagram: "",
-        fechaRegistro: new Date(),
-        imagen_url: ""
-    },
-    { 
-        _id: 2, 
-        id_rol_fk: 1, 
-        id_estado_fk: 1, 
-        id_profesion_fk: 1, 
-        cedulaUsuario: "123456789", 
-        nombreUsuario: "Juan", 
-        apellido1: "Perez",
-        apellido2: "Lopez",
-        edad: 30,
-        direccion: "Calle Ficticia 123",
-        telefono: "987654321",
-        email: "juan.perez@example.com",
-        contrasena: "password",
-        facebook: "",
-        instagram: "",
-        fechaRegistro: new Date(),
-        imagen_url: ""
-    },
-    { 
-        _id: 3, 
-        id_rol_fk: 2, 
-        id_estado_fk: 1, 
-        id_profesion_fk: 2, 
-        cedulaUsuario: "987654321", 
-        nombreUsuario: "Maria", 
-        apellido1: "Gomez",
-        apellido2: "Sanchez",
-        edad: 28,
-        direccion: "Avenida Central 456",
-        telefono: "654987123",
-        email: "maria.gomez@example.com",
-        contrasena: "password",
-        facebook: "",
-        instagram: "",
-        fechaRegistro: new Date(),
-        imagen_url: ""
-    },
-    { 
-        _id: 4, 
-        id_rol_fk: 3, 
-        id_estado_fk: 1, 
-        id_profesion_fk: 4, 
-        cedulaUsuario: "456789123", 
-        nombreUsuario: "Carlos", 
-        apellido1: "Martinez",
-        apellido2: "Ramirez",
-        edad: 35,
-        direccion: "Calle Real 789",
-        telefono: "321654987",
-        email: "carlos.martinez@example.com",
-        contrasena: "password",
-        facebook: "",
-        instagram: "",
-        fechaRegistro: new Date(),
-        imagen_url: ""
-    }
+  {nombreProfesion: "Especialista en tecnología" },
+  {nombreProfesion: "Ingeniero" },
+  {nombreProfesion: "Profesional de la salud" },
+  {nombreProfesion: "Operador de transporte" }
 ]);
 
 
 
-db.PUBLICACIONES.insertMany([
-    {
-        _id: 1,
-        id_estado_fk: 1, // Activo por defecto
-        id_categoria_fk: 1, // CUIDADO-NINOS
-        id_usuario_fk: 1, // ID del usuario que publica
-        titulo_publicacion: "Instalación de lámpara",
-        descripcion: "Servicio de instalación de lámpara en hogares y oficinas.",
-        fecha_publicacion: new Date("2025-03-05T17:00:00Z"),
-        precio_aprox: 25000, // Precio en colones o dólares, depende del sistema
-        imagen_url: " ",
-        ubicacion: {
-            ciudad: "San José",
-            provincia: "San José",
-            direccion_detallada: "Avenida Central, cerca del parque"
-        },
-        calificaciones: [
-            {
-                id_usuario_fk: 4, // Usuario que calificó
-                calificacion: 5.0,
-                comentario: "Muy profesional y puntual.",
-                fecha: new Date("2025-03-06T14:00:00Z")
-            }           
-        ]
-    },
-    {
-        _id: 2,
-        id_estado_fk: 1,
-        id_categoria_fk: 4, // LIMPIEZA
-        id_usuario_fk: 2,
-        titulo_publicacion: "Limpieza de jardín",
-        descripcion: "Servicio de mantenimiento y limpieza de jardines.",
-        fecha_publicacion: new Date("2025-03-07T10:30:00Z"),
-        precio_aprox: 15000,
-        imagen_url: " ",
-        ubicacion: {
-            ciudad: "Alajuela",
-            provincia: "Alajuela",
-            direccion_detallada: "Residencial Las Flores, casa #15"
-        },
-        calificaciones: [
-          {
-              id_usuario_fk: 3,
-              calificacion: 4.5,
-              comentario: "Buen trabajo, aunque tardó un poco.",
-              fecha: new Date("2025-03-07T12:30:00Z")
-          }
-        ]  
-    }
-]);
+//LOS USUARIOS Y OTRAS COLECCIONES NO SE INSERTAN AQUI DADO A QUE REQUIEREN DE un
+//USUARIO PARA CREARSE Y UN USUARIO NO SE PUEDE CREAR AQUI POR LA CODIFICACION DE LA CONTRASEÑA
+//POR ELLO SOLO SE INSERTAN LOS DOCUMENTOS IMPORTANTES
+
+//------------------------------------------------------------
+
+**NO IMPLEMENTADO**
 
 db.POSTULACIONES.insertMany([
     {
@@ -404,38 +301,5 @@ db.POSTULACIONES.insertMany([
         id_estado_fk: 1,
         fecha_postulacion: new Date("2025-03-06T12:00:00Z"),
         mensaje: "¿Podrían realizar la instalación en una oficina en Heredia?",
-    }
-]);
-
-//------------------------------------------------------
-db.CHATS.insertOne(
-    {
-        _id: ObjectId("60d34f1b2f9b32a34f5b4781"), // ID único del chat
-        participantes: [
-            1, // ID de usuario 1
-            2 // ID de usuario 2
-        ],
-        fecha_creacion: new Date("2025-03-06T10:00:00Z"),
-        ultima_actualizacion: new Date("2025-03-06T12:00:00Z"),
-        id_estado_fk: 1
-    }   
-);
-
-db.MENSAJES.insertMany([
-    {
-        _id: ObjectId("60d34f1b2f9b32a34f5b4786"),
-        id_chat_fk: ObjectId("60d34f1b2f9b32a34f5b4781"),
-        id_emisor_fk: 1,
-        mensaje: "¡Hola! ¿Cómo estás?",
-        fecha_envio: new Date("2025-03-06T10:05:00Z"),
-        id_estado_fk: 1
-    },
-    {
-        _id: ObjectId("60d34f1b2f9b32a34f5b4787"),
-        id_chat_fk: ObjectId("60d34f1b2f9b32a34f5b4781"),
-        id_emisor_fk: 2,
-        mensaje: "Estoy bien, gracias. ¿Y tú?",
-        fecha_envio: new Date("2025-03-06T10:06:00Z"),
-        id_estado_fk: 1
     }
 ]);

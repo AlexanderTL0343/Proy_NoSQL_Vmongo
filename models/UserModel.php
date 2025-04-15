@@ -8,6 +8,7 @@ class User extends ConexionAtlas
 {
     private $id;
     private $idRol;
+    private $idEstado;
     private $idProfesion;
     private $cedula;
     private $nombre;
@@ -34,6 +35,10 @@ class User extends ConexionAtlas
     public function getIdRol()
     {
         return $this->idRol;
+    }
+    public function getIdEstado()
+    {
+        return $this->idEstado;
     }
 
     public function getCedula()
@@ -118,6 +123,10 @@ class User extends ConexionAtlas
         $this->idRol = $idRol;
     }
 
+    public function setIdEstado($idEstado)
+    {
+        $this->idEstado = $idEstado;
+    }
     public function setCedula($cedula)
     {
         $this->cedula = $cedula;
@@ -201,12 +210,25 @@ class User extends ConexionAtlas
 
     //-----------------------------------------------------------------------------------
 
-    public function insertarUsuario(){//MONGO HECHO
+    public function insertarUsuario(){//MONGO HECHO //VALIDADO
         try {
             // Obtiene la conexión a la base de datos
             $conexion = self::getConexion();
 
             // Prepara el documento a insertar en MongoDB
+
+            if(is_numeric($this->idRol)){
+                $this->idRol = (int) $this->idRol;
+            }else{
+                $this->idRol = new \MongoDB\BSON\ObjectId($this->idRol);
+            }
+
+            if(is_numeric($this->idProfesion)){
+                $this->idProfesion = (int) $this->idProfesion;
+            }else{
+                $this->idProfesion = new \MongoDB\BSON\ObjectId($this->idProfesion);
+            }
+
             $usuario = [
                 'id_rol_fk' => $this->idRol,
                 'id_estado_fk' => 1, // Puedes ajustarlo según sea necesario
@@ -215,7 +237,7 @@ class User extends ConexionAtlas
                 'nombreUsuario' => $this->nombre,
                 'apellido1' => $this->apellido1,
                 'apellido2' => $this->apellido2,
-                'edad' => $this->edad,
+                'edad' =>  (int) $this->edad,
                 'direccion' => $this->direccion,
                 'telefono' => $this->telefono,
                 'email' => $this->email,
@@ -225,12 +247,14 @@ class User extends ConexionAtlas
                 'fechaRegistro' => new MongoDB\BSON\UTCDateTime(), // Fecha actual
                 'imagen_url' => $this->imagen_url
             ];
-    
+
             // Inserta el documento en la colección "USUARIOS"
             $result = $conexion->USUARIOS->insertOne($usuario);
 
             //DESCONECTAR DE MONGO
             self::desconectar();
+
+            //PRINTEAR ERROR ??
 
             if($result->getInsertedCount() == 1){
                 return true;
@@ -245,7 +269,7 @@ class User extends ConexionAtlas
         }
     }
 
-    function obtenerContrasena($email){ 
+    function obtenerContrasena($email){  //VALIDADO
         try {
             $Conexion = self::getConexion();
 
@@ -268,12 +292,15 @@ class User extends ConexionAtlas
         }
     }
 
-    public function iniciarSesion2(){//MONGO HECHO
+    public function iniciarSesion2(){//MONGO HECHO //VALIDADO
         try {
             $email = $this->getEmail();
             // Obtiene la conexión a MongoDB
             $conexion = self::getConexion();
     
+
+            error_log("Email de inicio de sesion:\n" . $email);
+
             // Consulta de agregación
             $res = $conexion->USUARIOS->aggregate([
                 ['$match' => ['email' => $email]],
@@ -326,6 +353,9 @@ class User extends ConexionAtlas
             // Convierte el resultado a un array
             $usuario = iterator_to_array($res);
             
+            //error_log("Usuario desde Mongo:\n" . print_r($usuario, true));
+
+
             // Verifica si hay resultados
             if (empty($usuario)) {
                 error_log("No se encontró ningún usuario con el email y contraseña proporcionados.");
@@ -359,7 +389,7 @@ class User extends ConexionAtlas
         }
     }
     
-    public function obtenerProfesiones(){//MONGO HECHO
+    public function obtenerProfesiones(){//MONGO HECHO //VALIDADO
         try {
             // Crea una nueva instancia de ConexionMongo y obtiene la conexión a la bsd
             $Conexion = self::getConexion();
@@ -369,6 +399,10 @@ class User extends ConexionAtlas
             
             // Convierte el cursor de MongoDB a un array
             $profesionesArray = iterator_to_array($profesiones);
+
+            foreach ($profesionesArray as &$profesion) {
+                $profesion['_id'] = (string) $profesion['_id'];
+            }
 
             //DESCONECTAR DE MONGO
             self::desconectar();
@@ -384,26 +418,6 @@ class User extends ConexionAtlas
         }
     }
 
-    public function insertarRedes(){
-        $SQL = "UPDATE USUARIOS SET INSTAGRAM = ?, FACEBOOK = ? WHERE ID_USUARIO_PK = ?";
-
-        try {
-            self::getConexion();
-            $res = self::$conn->prepare($SQL);
-            
-            $res->bindParam(1, $this->instagram);
-            $res->bindParam(2, $this->facebook);
-            $res->bindParam(3, $this->id);
-
-            $res->execute();
-            self::desconectar();
-            return true;
-        } catch (PDOException $Exception) {
-            self::desconectar(); //Esto lo robe del ejemplo crud
-            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-            return false;
-        }
-    }
 
     public function verificarExistenciaDb($id){//MONGO HECHO **REVISAR FUNCIONALIDAD**
         try {
@@ -425,11 +439,11 @@ class User extends ConexionAtlas
         }
     }
 
-    public function modificarUsuario() { //MONGO HECHO
+    public function modificarUsuario() { //MONGO HECHO //VALIDADO
         try {
             // Obtiene la conexión a MongoDB
             $Conexion = ConexionAtlas::obtenerConexion();
-    
+
             // Recoge los valores necesarios para la actualización
             $id = $this->getId();
             $nombre = $this->getNombre();
@@ -440,8 +454,14 @@ class User extends ConexionAtlas
             $facebook = $this->getFacebook();
             $cedula = $this->getCedula();
             $imagen_url = $this->getImagenUrl();
-            $profesion = (int) $this->getIdProfesion();
+            $profesion =  $this->getIdProfesion();
     
+            if(is_numeric($profesion)){
+                $profesion = (int)$profesion;
+            }else{
+                $profesion = new \MongoDB\BSON\ObjectId($profesion);
+            }
+
             // Prepara el array de actualización con los nombres correctos
             $updateData = [
                 'nombreUsuario' => $nombre,          
@@ -460,7 +480,6 @@ class User extends ConexionAtlas
             }else{
                 $id = new \MongoDB\BSON\ObjectId($id);
             }
-
 
             // Realiza la actualización en la colección "USUARIOS"
             $resultado = $Conexion->USUARIOS->updateOne(
@@ -610,6 +629,10 @@ class User extends ConexionAtlas
 
             foreach ($usuarios as $usuario) { //convertir de OBJECT ID a STRING
                 $usuario['_id'] = (string) $usuario['_id'];
+                $usuario['id_profesion_fk'] = (string) $usuario['id_profesion_fk'];
+                $usuario['id_estado_fk'] = (string) $usuario['id_estado_fk'];
+                $usuario['id_rol_fk'] = (string) $usuario['id_rol_fk'];
+                
             }
 
             return $usuarios;
