@@ -43,6 +43,36 @@ import { firebaseConfig } from "../../../config/global.js"; //por seguridad se a
         }
     }
 
+    async function updateImageByUrl(publicUrl, newFile, path = 'images/') {
+        try {
+          // Extraer el path relativo del archivo de la URL pública
+          const pathToFile = publicUrl.split("/o/")[1].split("?")[0]; // Obtener el path desde "images/...png"
+          const decodedPath = decodeURIComponent(pathToFile); // Decodificar caracteres como %2F
+      
+          // Crear referencia al archivo en Firebase Storage
+          const fileRef = ref(storage, decodedPath);
+      
+          // Eliminar el archivo anterior
+          await deleteObject(fileRef);
+          console.log("Archivo anterior eliminado exitosamente:", decodedPath);
+      
+          // Crear una referencia para el nuevo archivo
+          const newStorageRef = ref(storage, path + newFile.name);
+      
+          // Subir el nuevo archivo
+          await uploadBytes(newStorageRef, newFile);
+      
+          // Obtener la URL pública del nuevo archivo
+          const newDownloadUrl = await getDownloadURL(newStorageRef);
+      
+          // Devolver la nueva URL pública
+          return newDownloadUrl;
+        } catch (error) {
+          console.error("Error al actualizar la imagen:", error.message);
+          throw error; // Lanza el error para manejarlo en el código que llama a esta función
+        }
+      }
+
 //---------------------------------------------------------------------------------------
 
 
@@ -108,7 +138,7 @@ function generarCard(publicacion) {
     } else {
         imagenUrl = "https://dummyimage.com/450x300/dee2e6/6c757d.jpg";
     }
-    
+
     return `
       <li class="nav-item" data-category="${publicacion.id_categoria_fk}">
           <div class="col mb-5"">
@@ -127,7 +157,7 @@ function generarCard(publicacion) {
                                 
                             ${nombreRol === "RECLUTADOR" || nombreRol === "ADMIN" ? `
                                 <!-- Botón de Editar -->
-                                <a class="btn btn-outline-primary flex-fill" href="#" onclick="editPublication(${publicacion._id})" data-bs-toggle="modal" data-bs-target="#editJobModal">Editar</a>
+                                <a class="btn-modal-editar btn btn-outline-primary flex-fill" href="#" data-id="${publicacion._id}" data-bs-toggle="modal" data-bs-target="#editJobModal">Editar</a>
                             ` : ""}
                             
                             ${nombreRol === "RECLUTADOR" || nombreRol === "ADMIN" ? `
@@ -220,7 +250,6 @@ $(document).ready(function () {
     });
 });
 
-
 function limpiarFormularioEdicion() {
     $("#edit_titulo_publicacion").val(" ");
     $("#edit_categoria").val(" ");
@@ -229,14 +258,21 @@ function limpiarFormularioEdicion() {
     $("#edit_provincia").val(" ");
     $("#edit_ciudad").val(" ");
     $("#edit_direccion").val(" ");
-    $("#edit_imagen_url").val(" ");
+    $("#edit_imagen_url").val("");
     $("#edit_id_publicacion").val(" ");
 }
 
+// Función para cargar los datos de la publicación en el modal de edición
+$(document).on("click", ".btn-modal-editar", function() {
+    let id = $(this).data("id");
+    cargarDatosModalEditar(id);
+});
+
+
 // Actualizar publicación
 // Función para editar una publicación
-function editPublication(id) {
-    console.log(id);
+function cargarDatosModalEditar(id) {
+    console.log("id al iniciar editar publicacion "+id);
     limpiarFormularioEdicion();  // Limpiar el formulario antes de cargar la publicación
     $.ajax({
         url: "../controllers/publicacionController.php?op=obtenerPublicacion",
@@ -246,19 +282,22 @@ function editPublication(id) {
             response = JSON.parse(response);
             if (response.status) {
                 const pub = response.datos;
+                //cargarCategorias(); ya se llama cunado el doc esta listo
 
                 // Poblamos los campos del modal con los datos de la publicación
                 $("#edit_titulo_publicacion").val(pub.titulo_publicacion);
                 $("#edit_categoria").val(pub.id_categoria_fk);
                 $("#edit_descripcion").val(pub.descripcion);
                 $("#edit_precio_aprox").val(pub.precio_aprox);
-                $("#edit_provincia").val(pub.provincia);
-                $("#edit_ciudad").val(pub.ciudad);
-                $("#edit_direccion").val(pub.direccion);
-                $("#edit_imagen_url").val(pub.imagen_url);
+                $("#edit_provincia").val(pub.ubicacion.provincia);
+                $("#edit_ciudad").val(pub.ubicacion.ciudad);
+                $("#edit_direccion").val(pub.ubicacion.direccion_detallada);
+                $("#edit_url_imagen").val(pub.imagen_url);
                 $("#edit_id_publicacion").val(pub._id);
-
-                cargarCategorias();
+                $("#edit_id_usuario_fk").val(pub.id_usuario_fk);
+                console.log("id del usuario punlicacion modal "+pub.id_usuario_fk);   
+                //console.log("id de la publicación "+pub._id);
+                
             } else {
                 Swal.fire({
                     icon: "error",
@@ -273,55 +312,97 @@ function editPublication(id) {
     });
 }
 
-/*
+
 // Función para actualizar la publicación
-$("#updateJob").click(function (e) {
+$("#actualizarPublicacion").click(function (e) {
     e.preventDefault();
 
+    swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Desea actualizar esta publicación?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'Cancelar',
+    }).then( async (result) => {
+        if (result.isConfirmed) {
 
-    const formData = new FormData($("#formEditJob")[0]);
-    $.ajax({
-        url: "../controllers/publicacionController.php?op=actualizarPublicacion",
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function (response) {
-            response = JSON.parse(response);
-            if (response.status) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Publicación actualizada exitosamente",
-                    showConfirmButton: false,
-                    timer: 1800,
-                }).then(() => {
-                    // Redirigir o recargar para mostrar la publicación actualizada
-                    window.location.href = "main.php";
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error al actualizar la publicación",
-                    text: "Revisa los errores y vuelve a intentarlo.",
-                    showConfirmButton: false,
-                    timer: 1800,
-                });
+            var formData = new FormData($("#formEditJob")[0]);
+            var file = document.getElementById("edit_imagen_url").files[0];
+            var urlImagen = document.getElementById("edit_url_imagen").value;
+            
+            console.log("url de la URLimagen "+ urlImagen);   
+            console.log("URL de imagen anterior:", urlImagen);
+
+            if(file){ //si el usuario selecciona una nueva imagen
+                if (urlImagen === "" || urlImagen === " ") { // Si no hay imagen previa, subir una nueva
+                    let newImagenUrl = await uploadImageAndGetUrl(file);
+                    formData.append("imagenUrl", newImagenUrl);
+                    console.log("Subida nueva imagen: " + newImagenUrl);
+                } else { // Si ya hay una imagen previa, actualizarla
+                    let newImagenUrl = await updateImageByUrl(urlImagen, file);
+                    formData.append("imagenUrl", newImagenUrl);
+                    console.log("Imagen actualizada: " + newImagenUrl);
+                }
+            }else{
+                console.log("url de la img en el else  "+ urlImagen);
+                formData.append("imagenUrl", urlImagen);//revisar
             }
-        },
-        error: function (err) {
-            console.error("Error en la solicitud AJAX:", err);
-            Swal.fire({
-                icon: "error",
-                title: "Error al actualizar la publicación",
-                text: "Revisa los errores y vuelve a intentarlo.",
-                showConfirmButton: false,
-                timer: 1800,
+
+            //console.log("id de la publicación "+ formData.get("id_publicacion"));
+            console.log("url de la img "+ formData.get("imagenUrl"));
+
+            $.ajax({
+                url: "../controllers/publicacionController.php?op=actualizarPublicacion",
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    response = JSON.parse(response);
+                    if (response.status) {
+                        Swal.fire({
+                            icon: "success",
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 1800,
+                        }).then(() => {
+                            // Redirigir o recargar para mostrar la publicación actualizada
+                            window.location.href = "main.php";
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: response.message,
+                            text: "Revisa los errores y vuelve a intentarlo.",
+                            showConfirmButton: false,
+                            timer: 1800,
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.error("Error en la solicitud AJAX:", err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error al actualizar la publicación",
+                        text: "Revisa los errores y vuelve a intentarlo.",
+                        showConfirmButton: false,
+                        timer: 1800,
+                    });
+                },
             });
-        },
-    });
+        }else{
+
+            //pendiente si no se confirma el editar
+        }
+    }); 
+   
 });
 
-*/
+
+
+
+
 
 
 // Eliminar publicación

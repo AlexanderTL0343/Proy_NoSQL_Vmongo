@@ -61,18 +61,52 @@
             echo json_encode($response);
             break;
         case "actualizarPublicacion":
-            /*$publicacion = new publicacion();
+
+            $idPublicacion = isset($_POST['id_publicacion']) ? trim($_POST['id_publicacion']) : "";
+            $idUsuarioFK = isset($_POST['id_usuario_fk']) ? trim($_POST['id_usuario_fk']) : "";
+            $tituloPublicacion = isset($_POST['titulo_publicacion']) ? trim($_POST['titulo_publicacion']) : "";
+            $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : "";
+            $precioAprox = isset($_POST['precio_aprox']) ? trim($_POST['precio_aprox']) : 0;
+            $provincia = isset($_POST['provincia']) ? trim($_POST['provincia']) : "";
+            $ciudad = isset($_POST['ciudad']) ? trim($_POST['ciudad']) : "";
+            $direccion = isset($_POST['direccion']) ? trim($_POST['direccion']) : "";
+            $idCategoria = isset($_POST['categoria']) ? trim($_POST['categoria']) : 0;
+            $imagenUrl = isset($_POST['imagenUrl']) ? trim($_POST['imagenUrl']) : "";//revisar
+            $idEstado = isset($_POST['id_estado_fk']) ? trim($_POST['id_estado_fk']) : 1;
+
+            $publicacion = new publicacion();
+            $publicacion->setIdPublicacion($idPublicacion);
+            $publicacion->setIdUsuario($idUsuarioFK);
+            $publicacion->setTituloPublicacion($tituloPublicacion);
+            $publicacion->setDescripcion($descripcion);
+            $publicacion->setPrecioAprox($precioAprox);
+            $publicacion->setProvincia($provincia);
+            $publicacion->setCiudad($ciudad);
+            $publicacion->setDireccion($direccion);
+            $publicacion->setIdCategoria($idCategoria);
+            $publicacion->setImagenUrl($imagenUrl);
+            $publicacion->setIdEstado($idEstado);
+            //LA FECHA NO SE MODIFICARA
+
+            error_log("***Publicacion actualizada***". print_r($publicacion, true));
+
             $res = $publicacion->actualizarPublicacion();
 
-            //$response = array();
-            $response = [
-                "status" => true,
-                "message" => "Publicaciones obtenidas",
-                "datos" => $res
-            ];
+            if($res){
+                $response = [
+                    "status" => true,
+                    "message" => "Publicación actualizada exitosamente"
+                ];
+                echo json_encode($response);
+            }else{
+                $response = [
+                    "status" => false,
+                    "message" => "Error al actualizar la publicación (model)"
+                ];
+                echo json_encode($response);
+            }
 
-            echo json_encode($response);
-            break;*/
+            break;
         case 'eliminarPublicacion':
             $publicacion = new publicacion();
             $pub = $publicacion->obtenerPublicacion($_POST['id']);

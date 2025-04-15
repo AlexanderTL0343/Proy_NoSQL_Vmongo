@@ -276,6 +276,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
                 if($res){
                     $res['_id'] = (string) $res['_id'];
+                    $res['id_estado_fk'] = (string) $res['id_estado_fk'];
+                    $res['id_categoria_fk'] = (string) $res['id_categoria_fk'];
+                    $res['id_usuario_fk'] = (string) $res['id_usuario_fk'];
                     return $res;
                 } else {
                     return false;
@@ -288,5 +291,73 @@ require_once __DIR__ . '/../vendor/autoload.php';
         }
 
         //QUEDA PENDIENTE EL ACTUALIZAR PUBLICACION
+        public function actualizarPublicacion(){
+            try {
+                $Conexion = self::getConexion();
+
+                if(is_numeric($this->idEstado)){
+                    $this->idEstado = (int) $this->idEstado;
+                }else{
+                    $this->idEstado = new \MongoDB\BSON\ObjectId($this->idEstado);
+                }
+
+                if(is_numeric($this->idCategoria)){
+                    $this->idCategoria = (int) $this->idCategoria;
+                }else{
+                    $this->idCategoria = new \MongoDB\BSON\ObjectId($this->idCategoria);
+                }
+
+                if(is_numeric($this->idUsuario)){
+                    $this->idUsuario = (int) $this->idUsuario;
+                }else{
+                    $this->idUsuario = new \MongoDB\BSON\ObjectId($this->idUsuario);
+                }
+
+
+                $publicacionActualizada = [
+                    'id_estado_fk' => $this->idEstado,
+                    'id_categoria_fk' => $this->idCategoria, 
+                    'id_usuario_fk' => $this->idUsuario,
+                    'titulo_publicacion' => $this->tituloPublicacion, 
+                    'descripcion' => $this->descripcion, 
+                    'fecha_publicacion'=> new MongoDB\BSON\UTCDateTime(),
+                    'precio_aprox' => (float) $this->precioAprox, 
+                    'imagen_url' => $this->imagenUrl, 
+                    'ubicacion' => [
+                        'ciudad' => $this->ciudad,
+                        'provincia' => $this->provincia,
+                        'direccion_detallada' => $this->direccion
+                    ],
+                    'calificaciones' => [
+
+                    ]    
+                ];
+
+                //error_log("***Publicacion en  MODELO***". print_r($publicacionActualizada, true));
+
+                if(is_numeric($this->idPublicacion)){
+                    $this->idPublicacion = (int) $this->idPublicacion;
+                }else{
+                    $this->idPublicacion = new \MongoDB\BSON\ObjectId($this->idPublicacion);
+                }
+
+                $res = $Conexion->PUBLICACIONES->updateOne(
+                    ['_id' => $this->idPublicacion],  // Filtro para encontrar al usuario por su ID
+                    ['$set' => $publicacionActualizada]// Datos a actualizar
+                );
+
+                self::desconectar();
+
+                if($res->getModifiedCount() == 1){
+                    return true;
+                }else{
+                    return false;
+                }
+            } catch (MongoDB\Driver\Exception\Exception $e) {
+                // Captura cualquier error en la conexión o inserción
+                error_log("Error al actualizar publicación: " . $e->getMessage());
+                return false;
+            }
+        }
     }
 ?>

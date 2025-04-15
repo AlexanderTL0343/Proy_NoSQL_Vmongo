@@ -167,13 +167,15 @@ include("../config/session.php"); // Dependiendo del rol
             <input type="file" class="form-control" id="edit_imagen_url" name="imagenUrl" placeholder="URL de la imagen (opcional)">
           </div>
 
+          <input type="hidden" name="url_imagen" id="edit_url_imagen">
+          <input type="hidden" name="id_usuario_fk" id="edit_id_usuario_fk">
           <input type="hidden" name="id_publicacion" id="edit_id_publicacion">
           <input type="hidden" name="id_estado_fk" value="1"><!--ESTO DEBE CAMBIAR-->
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="updateJob">Actualizar</button>
+        <button type="button" class="btn btn-primary" id="actualizarPublicacion">Actualizar</button>
       </div>
     </div>
   </div>
