@@ -154,7 +154,7 @@ db.createCollection("PUBLICACIONES",{
     validator: {
         $jsonSchema: {
             bsonType: "object",
-            required: [ "id_estado_fk", "id_categoria_fk", "id_usuario_fk", "titulo_publicacion", "descripcion", "fecha_publicacion", "precio_aprox", "imagen_url", "ubicacion", "calificaciones" ],
+            required: [ "id_estado_fk", "id_categoria_fk", "id_usuario_fk", "titulo_publicacion", "descripcion", "fecha_publicacion", "precio_aprox", "ubicacion"],
             properties: {
                 id_estado_fk: {
                     anyOf: [
@@ -208,7 +208,6 @@ db.createCollection("PUBLICACIONES",{
                     bsonType: "array",
                     items: {
                         bsonType: "object",
-                        required: [ "id_usuario_fk", "calificacion", "comentario", "fecha" ],
                         properties: {
                             id_usuario_fk: {
                                 anyOf: [

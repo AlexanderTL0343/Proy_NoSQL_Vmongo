@@ -117,11 +117,29 @@ require_once __DIR__ . '/../vendor/autoload.php';
         }
         //----------------Métodos-----------------
 
-        public function insertarPublicacion(){//MONGO HECHO
+        public function insertarPublicacion(){//MONGO HECHO //VALIDADO
 
             try {
                 // Obtiene la conexión a la base de datos
                 $conexion = self::getConexion();
+
+                if(is_numeric($this->idEstado)){
+                    $this->idEstado = (int) $this->idEstado;
+                }else{
+                    $this->idEstado = new \MongoDB\BSON\ObjectId($this->idEstado);
+                }
+
+                if(is_numeric($this->idCategoria)){
+                    $this->idCategoria = (int) $this->idCategoria;
+                }else{
+                    $this->idCategoria = new \MongoDB\BSON\ObjectId($this->idCategoria);
+                }
+
+                if(is_numeric($this->idUsuario)){
+                    $this->idUsuario = (int) $this->idUsuario;
+                }else{
+                    $this->idUsuario = new \MongoDB\BSON\ObjectId($this->idUsuario);
+                }
 
                 $publicacion = [
                     //el id se agrega solo, no en formato numerico pero se agrega XD
@@ -132,13 +150,15 @@ require_once __DIR__ . '/../vendor/autoload.php';
                     'descripcion' => $this->descripcion, 
                     'fecha_publicacion'=> new MongoDB\BSON\UTCDateTime(),
                     'imagen_url' => $this->imagenUrl, 
-                    'precio_aprox' => $this->precioAprox, 
+                    'precio_aprox' => (float) $this->precioAprox, 
                     'ubicacion' => [
-                        'ciudad' => $this->ciudad,                       // Ciudad
-                        'provincia' => $this->provincia,                 // Provincia
-                        'direccion_detallada' => $this->direccion       // Dirección detallada
+                        'ciudad' => $this->ciudad,
+                        'provincia' => $this->provincia,
+                        'direccion_detallada' => $this->direccion
                     ],
-                    'calificaciones' => []    
+                    'calificaciones' => [
+
+                    ]    
                 ];
 
                 $res = $conexion->PUBLICACIONES->insertOne($publicacion);
@@ -155,9 +175,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
                 error_log("Error al insertar usuario: " . $e->getMessage());
                 return false;
             }
-        }      
+        }
 
-        public function listarPublicaciones(){//MONGO HECHO
+        public function listarPublicaciones(){//MONGO HECHO //VALIDADO
             
             try {
                 $Conexion = self::getConexion();
@@ -170,6 +190,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
                 foreach ($publicaciones as $publicacion) { //convertir de OBJECT ID a STRING
                     $publicacion['_id'] = (string) $publicacion['_id'];
+                    $publicacion['id_estado_fk'] = (string) $publicacion['id_estado_fk'];
+                    $publicacion['id_categoria_fk'] = (string) $publicacion['id_categoria_fk'];
+                    $publicacion['id_usuario_fk'] = (string) $publicacion['id_usuario_fk'];
                 }
 
                 return $publicaciones;
@@ -183,7 +206,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
 
-        public function listarCategorias(){//MONGO HECHO
+        public function listarCategorias(){//MONGO HECHO //VALIDADO
 
             try {
                 $Conexion = self::getConexion();
@@ -191,6 +214,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
                 self::desconectar();
 
                 $categorias = iterator_to_array($res);
+
+                foreach ($categorias as &$categoria) {
+                    $categoria['_id'] = (string) $categoria['_id'];
+                }
 
                 return $categorias;                         
             } catch (MongoDB\Driver\Exception\Exception $e) {
@@ -203,7 +230,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
 
-        public function eliminarPublicacion($id){//MONGO HECHO
+        public function eliminarPublicacion($id){//MONGO HECHO //VALIDADO
             try {
                 $Conexion = self::getConexion();
 

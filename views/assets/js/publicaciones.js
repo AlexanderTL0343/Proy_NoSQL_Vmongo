@@ -7,7 +7,7 @@ import { firebaseConfig } from "../../../config/global.js"; //por seguridad se a
   const app = initializeApp(firebaseConfig);
   const storage = getStorage(app);
 
-  async function uploadImageAndGetUrl(file, path = 'images/') {
+    async function uploadImageAndGetUrl(file, path = 'images/') {
         try {
             // Crea una referencia al archivo en Firebase Storage
             const storageRef = ref(storage, path + file.name);
@@ -25,6 +25,7 @@ import { firebaseConfig } from "../../../config/global.js"; //por seguridad se a
             throw error; // Lanza el error para manejarlo en el código que llama a esta función
         }
     }
+    
     async function deleteImageByUrl(publicUrl) {
         try {
             // Extraer el path relativo del archivo
@@ -184,7 +185,7 @@ $(document).ready(function () {
                     case true:
                         Swal.fire({
                             icon: "success",
-                            title: "Publicación creada exitosamente",
+                            title: response.message,
                             text: "¡Gracias por compartir tu trabajo!",
                             showConfirmButton: false,
                             timer: 1800,
@@ -197,7 +198,7 @@ $(document).ready(function () {
                     case false:
                         Swal.fire({
                             icon: "error",
-                            title: "Error al crear la publicación",
+                            title: response.message,
                             text: "Revisa los errores y vuelve a intentarlo.",
                             showConfirmButton: false,
                             timer: 1800,
@@ -356,14 +357,14 @@ function eliminarPublicacion(id) {
                                 showConfirmButton: false,
                                 timer: 1800,
                             }).then(() => {
-                                listarChats();
+                                cargarPublicaciones();
                             });
                             break;
 
                         case false:
                             Swal.fire({
                                 icon: "error",
-                                title: "Error al eliminar la publicación",
+                                title: response.message,
                                 text: "Revisa los errores y vuelve a intentarlo.",
                                 showConfirmButton: false,
                                 timer: 1800,
