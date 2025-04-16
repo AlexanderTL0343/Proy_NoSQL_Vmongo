@@ -1,71 +1,44 @@
 <?php
-include '../models/TablaProfesiones.php';
-
+include '../models/TablaPublicaciones.php';
 
 switch ($_GET['op']) {
-    case 'LlenarTablaProfe':
-        $tabla = new TablaProfe();
-        $clientes = $tabla->listarTablaProfe();
-        $data = array();
-        foreach ($clientes as $reg) {
-            $data[] = array(
-                "0" => $reg->getIdProfesionPk(),
-                "1" => $reg->getNombreProfesion(),
-                "2" => '<button class="btn btn-warning" id="modificarProfesion">Modificar</button>  ' .
-                    '<button class="btn btn-danger" id="eliminarProfesion">Eliminar</button> '
-            );
-        }
-        $resultados = array(
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
-        );
-        echo json_encode($resultados);
-        break;
 
-    case 'insertar':
-        $id = isset($_POST["Fid"]) ? trim($_POST["Fid"]) : "";
-        $nombre = isset($_POST["Fnombre"]) ? trim($_POST["Fnombre"]) : "";
-        $tabla = new TablaProfe();
-        $tabla->setIdProfesionPk($id);
-        $encontrado = $tabla->verificarExistenciaDb($id);
-        if ($encontrado == false) {
-            $tabla->setIdProfesionPk($id);
-            $tabla->setNombreProfesion($nombre);
-            $tabla->guardarProfesion();
-            if ($tabla->verificarExistenciaDb($id)) {
-                echo 1;
-            } else {
-                echo 0;
-            }
-        } else {
-            echo 2;
-        }
-        break;
-
+    case 'LlenarTablaPubli':
+                $tabla = new TablaPubli();
+                echo json_encode($tabla->listarTablaPubli());
+                break;
+            
     case 'editar':
-        $id = isset($_POST["Mid"]) ? trim($_POST["Mid"]) : "";
-        $nombre = isset($_POST["Mnombre"]) ? trim($_POST["Mnombre"]) : "";
-
-        $tabla = new TablaProfe();
-
-        $encontrado = $tabla->verificarExistenciaDb($id);
-
-        if ($encontrado == 1) {
-            $tabla->llenarCampos($id);
-            $tabla->setNombreProfesion($nombre);
-
-            $modificados = $tabla->actualizarProfesion();
-            if ($modificados > 0) {
-                echo 1;
-            } else {
-                echo 0;
+                $id = isset($_POST["Pid"]) ? trim($_POST["Pid"]) : "";
+    
+                $usuario = isset($_POST["Puser"]) ? trim($_POST["Puser"]) : "";
+                $titulo = isset($_POST["Ptitulo"]) ? trim($_POST["Ptitulo"]) : "";
+                $descripcion = isset($_POST["Pdescripcion"]) ? trim($_POST["Pdescripcion"]) : "";
+                $ubicacion = isset($_POST["Pubicacion"]) ? trim($_POST["Pubicacion"]) : "";
+                $precio = isset($_POST["Pprecio"]) ? trim($_POST["Pprecio"]) : "";
+            
+                $publicacion = new TablaPubli();
+    
+                $encontrado = $publicacion->verificarExistenciaDb($id);
+    
+                if ($encontrado == 1) {
+                    $publicacion->llenarCampos($id);
+                    $publicacion->setIdUsuarioFk($usuario);
+                    $publicacion->setTituloPublicacion($titulo);
+                    $publicacion->setDescripcion($descripcion);
+                    $publicacion->setUbicacion($ubicacion);
+                    $publicacion->setPrecioAprox($precio);
+            
+                    $modificados = $publicacion->actualizarPublicaciones();
+                    if ($modificados > 0) {
+                        echo 1;
+                    } else {
+                        echo 0;
+                    }
+                } else {
+    
+                    echo 2; 
+                }
+            break;
             }
-        } else {
-            print_r("ERROR DE CONTROLADOR");
-
-            echo 2;
-        }
-        break;
-}
+?>

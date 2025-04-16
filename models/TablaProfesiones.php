@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/conexionAtlas.php';
 
-class TablaProfe extends Conexion
+class TablaProfe extends conexionAtlas
 {
 
     protected static $cnx;
@@ -15,7 +15,7 @@ class TablaProfe extends Conexion
 
     public static function getConexion()
     {
-        self::$cnx = Conexion::conectar();
+        self::$cnx = conexionAtlas::conectar();
     }
 
     public static function desconectar()
@@ -42,28 +42,59 @@ class TablaProfe extends Conexion
           $this->nombreProfesion = $nombreProfesion;
       }
 
+      public function listadesplegableProfe(){
+
+        try {
+            $db = ConexionAtlas::conectar();
+            $profesiones = $db->PROFESIONES->find([], ['projection' => ['_id' => 1, 'nombreProfesion' => 1]]);
+            
+            $resultado = [];
+        
+            foreach ($profesiones as $p) {
+                $resultado[] = [
+                    'id' => (string)$p['_id'],
+                    'nombre' => $p['nombreProfesion']
+                ];
+            }
+        
+            echo json_encode($resultado);
+        } catch (Exception $e) {
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+      }
+
+
       public function listarTablaProfe()
       {
-          $query = "SELECT * from Profesiones ";
-          $arr = array();
-          try {
-              self::getConexion();
-              
-              $resultado = self::$cnx->prepare($query);
-              $resultado->execute();
-              self::desconectar();
-              foreach ($resultado->fetchAll() as $encontrado) {
-                  $client = new TablaProfe();
-                  $client->setIdProfesionPk($encontrado['ID_PROFESION_PK']);
-                  $client->setNombreProfesion($encontrado['NOMBRE_PROFESION']);
-                  $arr[] = $client;
-              }
-              return $arr;
-          } catch (PDOException $Exception) {
-              self::desconectar();
-              $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-              return json_encode($error);
-          }
+        try{
+            $db = ConexionAtlas::conectar();
+
+            $res = $db->PROFESIONES->find();
+            
+            $resArray = iterator_to_array($res);
+
+            $data = [];
+
+            foreach ($resArray as $profesion) {
+                $data[] = [
+                    (string)$profesion['_id'],
+                    $profesion['nombreProfesion'] ?? '',
+                    "<button class='btn btn-warning btn-sm'>Editar</button>" // Botón
+    
+                ];
+            }
+            return[
+                "sEcho" => 1,
+                "iTotalRecords" => count($data),
+                "iTotalDisplayRecords" => count($data),
+                "aaData" => $data
+            ];
+
+        }catch (MongoDB\Driver\Exception\Exception $Exception) {
+            return [
+                'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+            ];
+        }
       }
       public function guardarProfesion(){
         $query = "INSERT INTO `profesiones`(`ID_PROFESION_PK`, `NOMBRE_PROFESION`) VALUES (:ID_PROFESION_PK,:NOMBRE_PROFESION)";
@@ -158,4 +189,3 @@ class TablaProfe extends Conexion
 
 }
 ?>
-

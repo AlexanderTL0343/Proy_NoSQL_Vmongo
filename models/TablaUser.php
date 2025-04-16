@@ -1,6 +1,7 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/ConexionAtlas.php';
+
 
 class TablaUser extends ConexionAtlas
 {
@@ -201,7 +202,7 @@ class TablaUser extends ConexionAtlas
 //-----------------------------------------------------------------------------------
     public static function getConexion()
     {
-        self::$cnx = Conexion::conectar();
+        self::$cnx = ConexionAtlas::conectar();
     }
 
     public static function desconectar()
@@ -209,15 +210,106 @@ class TablaUser extends ConexionAtlas
         self::$cnx = null;
     }
 
+    public function listarTablaUser()
+{
+    try {
+        // Obtener conexión a MongoDB
+        $db = ConexionAtlas::conectar();
+
+        // Realizar la agregación en MongoDB
+        $res = $db->USUARIOS->aggregate([
+           // ['$match' => []],  // Puedes poner filtros si quieres
+
+            // JOIN con ROLES
+            [
+                '$lookup' => [
+                    'from' => 'ROLES',
+                    'localField' => 'id_rol_fk',
+                    'foreignField' => '_id',
+                    'as' => 'rol'
+                ]
+            ],
+            // JOIN con PROFESIONES
+            [
+                '$lookup' => [
+                    'from' => 'PROFESIONES',
+                    'localField' => 'id_profesion_fk',
+                    'foreignField' => '_id',
+                    'as' => 'profesion'
+                ]
+            ],
+            // JOIN con ESTADOS
+            [
+                '$lookup' => [
+                    'from' => 'ESTADOS',
+                    'localField' => 'id_estado_fk',
+                    'foreignField' => '_id',
+                    'as' => 'estado'
+                ]
+            ],
+
+            // Desenrollar los arrays
+            ['$unwind' => '$rol'],
+            ['$unwind' => '$profesion'],
+            ['$unwind' => '$estado'],
+
+            // Agregar campos útiles
+            [
+                '$addFields' => [
+                    'nombre_rol' => '$rol.rol',
+                    'nombre_profesion' => '$profesion.nombreProfesion',
+                    'nombre_estado' => '$estado.estado',
+                ]
+            ]
+        ]);
+
+        $resArray = iterator_to_array($res);
+
+        $data = [];
+
+        foreach ($resArray as $usuario) {
+            $data[] = [
+                (string)$usuario['_id'],                         // ID
+                $usuario['nombreUsuario'] ?? '',                 // Nombre
+                $usuario['edad'] ?? '',                          // Edad
+                $usuario['email'] ?? '',                         // Email
+                $usuario['nombre_profesion'] ?? '',              // Profesión
+                $usuario['fechaRegistro'] ?? '',                 // Fecha de Registro
+                $usuario['nombre_rol'] ?? '',                    // Rol
+                $usuario['nombre_estado'] ?? '',                 // Estado
+                "<button class='btn btn-warning btn-sm' id='btEditarUser'>Editar</button>" // Botón
+            ];
+        }
+
+        return [
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ];
+
+    } catch (MongoDB\Driver\Exception\Exception $Exception) {
+        return [
+            'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+        ];
+    }
+
+
+
+}
+
+
+
+
     //funcion para listar la tabla de los usuarios 
 
-    public function listarTablaUser()
+   /* public function listarTablaUser()
     {
         // Arreglo para almacenar los resultados
         $arr = array();
         try {
             // Obtener conexión a MongoDB
-            $db = ConexionMongo::obtenerConexion();
+            $db = ConexionAtlas::conectar();
     
             // Realizar la agregación en MongoDB
             $res = $db->USUARIOS->aggregate([
@@ -282,6 +374,9 @@ class TablaUser extends ConexionAtlas
                     ]
                 ]
             ]);
+
+             // Convertir el cursor de MongoDB a un array
+            $resArray = iterator_to_array($res);
     
             // Recorrer los resultados y mapearlos a objetos
             foreach ($res as $encontrado) {
@@ -303,7 +398,7 @@ class TablaUser extends ConexionAtlas
             $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
             return json_encode($error);
         }
-    }
+    }*/
     
 
 
@@ -420,3 +515,4 @@ class TablaUser extends ConexionAtlas
 
 //$mode = new Tablauser();
 //var_dump($mode->verificarExistenciaDb(1));
+

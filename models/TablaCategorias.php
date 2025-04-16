@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/ConexionAtlas.php';
 
-class TablaCate extends Conexion
+class TablaCate extends ConexionAtlas
 {
 
     protected static $cnx;
@@ -16,7 +16,7 @@ class TablaCate extends Conexion
 
     public static function getConexion()
     {
-        self::$cnx = Conexion::conectar();
+        self::$cnx = ConexionAtlas::conectar();
     }
 
     public static function desconectar()
@@ -54,27 +54,35 @@ class TablaCate extends Conexion
 
       public function listarTablaCate()
       {
-          $query = "SELECT * from CATEGORIAS ";
-          $arr = array();
-          try {
-              self::getConexion();
-              
-              $resultado = self::$cnx->prepare($query);
-              $resultado->execute();
-              self::desconectar();
-              foreach ($resultado->fetchAll() as $encontrado) {
-                  $client = new TablaCate();
-                  $client->setIdCategoriaPk($encontrado['ID_CATEGORIA_PK']);
-                  $client->setNombreCategoria($encontrado['NOMBRE_CATEGORIA']);
-                  $client->setDescripcion($encontrado['DESCRIPCION']);
-                  $arr[] = $client;
-              }
-              return $arr;
-          } catch (PDOException $Exception) {
-              self::desconectar();
-              $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-              return json_encode($error);
-          }
+        try{
+            $db = ConexionAtlas::conectar();
+
+            $res = $db->CATEGORIAS->find();
+
+            $resArray = iterator_to_array($res);
+
+            $data = [];
+
+            foreach ($resArray as $categoria) {
+                $data[] = [
+                    (string)$categoria['_id'],
+                    $categoria['nombreCategoria'] ?? '',
+                    $categoria['descripcion'] ?? '',
+                    "<button class='btn btn-warning btn-sm'>Editar</button>" // Botón
+
+    
+                ];
+            }  return [
+                "sEcho" => 1,
+                "iTotalRecords" => count($data),
+                "iTotalDisplayRecords" => count($data),
+                "aaData" => $data
+            ];
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            return [
+                'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+            ];
+        }
       }
       
       public function guardarCategoria(){

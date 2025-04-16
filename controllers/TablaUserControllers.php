@@ -3,33 +3,11 @@ include '../models/TablaUser.php';
 
 switch ($_GET['op']) {
     case 'LlenarTablaUser':
+        
         $tabla = new TablaUser();
-        $clientes = $tabla->listarTablaUser();
-        $data = array();
-        foreach ($clientes as $reg) {
-            $data[] = array(
-                "0" => $reg->getId(),
-                "1" => $reg->getNombre(),
-                "2" => $reg->getEdad(),
-                "3" => $reg->getEmail(),
-                "4" => $reg->getProfesion(),
-                "5" => $reg->getFechaRegistro(),
-                "6" => $reg->getIdRol(),
-                "7" => $reg->getEstado(),
-                "8" => '<button class="btn btn-warning" id="modificarUsuario">Modificar</button>  ' .
-                    '<button class="btn btn-danger" id="eliminarUsuario">Eliminar</button> '
-
-            );
-        }
-        $resultados = array(
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
-        );
-        echo json_encode($resultados);
+        echo json_encode($tabla->listarTablaUser());
         break;
-
+      
     case 'editar':
         $id = isset($_POST["Eid"]) ? trim($_POST["Eid"]) : "";
 

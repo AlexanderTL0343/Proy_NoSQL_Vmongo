@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/conexionAtlas.php';
 
-class TablaPubli extends Conexion
+class TablaPubli extends conexionAtlas
 {
 
     protected static $cnx;
@@ -21,7 +21,7 @@ class TablaPubli extends Conexion
 
     public static function getConexion()
     {
-        self::$cnx = Conexion::conectar();
+        self::$cnx = conexionAtlas::conectar();
     }
 
     public static function desconectar()
@@ -94,35 +94,78 @@ class TablaPubli extends Conexion
 
     public function listarTablaPubli()
     {
-        $query = "SELECT p.ID_PUBLICACION_PK, p.ID_USUARIO_FK, p.TITULO_PUBLICACION, p.DESCRIPCION,
-        p.FECHA_PUBLICACION, p.UBICACION, p.PRECIO_APROX, e.NOMBRE_ESTADO
-          FROM publicaciones p
-          JOIN estados e ON p.ID_ESTADO_FK = e.ID_ESTADO_PK";
-        $arr = array();
-        try {
-            self::getConexion();
+   
+
+        try{
+            $db = ConexionAtlas::conectar();
             
-            $resultado = self::$cnx->prepare($query);
-            $resultado->execute();
-            self::desconectar();
-            foreach ($resultado->fetchAll() as $encontrado) {
-                $client = new TablaPubli();
-                $client->setIdPublicacionesPk($encontrado['ID_PUBLICACION_PK']);
-                $client->setIdUsuarioFk($encontrado['ID_USUARIO_FK']);
-                $client->setTituloPublicacion($encontrado['TITULO_PUBLICACION']);
-                $client->setDescripcion($encontrado['DESCRIPCION']);
-                $client->setFechaPublicacion($encontrado['FECHA_PUBLICACION']);
-                $client->setUbicacion($encontrado['UBICACION']);
-                $client->setPrecioAprox($encontrado['PRECIO_APROX']);
-                $client->setEstado($encontrado['NOMBRE_ESTADO']);
-                $arr[] = $client;
+            $res = $db ->PUBLICACIONES ->aggregate([
+
+                //JOIN CON ESTADO
+                [
+                    '$lookup' =>[
+                        'from'=> 'ESTADO',
+                        'localField' => 'id_estado_fk',
+                        'foreignField' => '_id',
+                        'as' => 'estado'
+                    ]
+                    ],
+
+                //JOIN CON USUARIOS    
+                [
+                    '$lookup' => [
+                        'from' => 'USUARIOS',
+                        'localField' => 'id_usuario_fk',
+                        'foreignField' => '_id',
+                        'as' => 'usuario'
+                    ]
+                    ],
+
+                // Desenrollar los arrays
+                ['$unwind' => '$estado'],
+                ['$unwind' => '$usuario'],  
+            
+                // Agregar campos útiles
+                [
+                    '$addFields' => [
+                    'nombre_usuario' => '$usuario.nombreUsuario',
+                    'nombre_estado' => '$estado.estado',
+                            ]
+                ]
+
+            ]);
+
+            $resArray = iterator_to_array($res);
+            $data = [];
+
+            foreach($resArray as $publicacion){
+                $data[] = [
+                    (string)$publicacion['_id'],
+                    $publicacion['nombre_usuario'] ?? '',
+                    $publicacion['titulo_publicacion'] ?? '',
+                    $publicacion['descripcion'] ?? '',
+                    $publicacion['fecha_publicacion'] ??
+                    $publicacion['ubicacion'] ?? '',
+                    $publicacion['precio_aprox'] ?? '',
+                    $publicacion['nombre_estado'] ?? '',
+                    "<button class='btn btn-warning btn-sm'>Editar</button>"
+                    
+
+                ];
             }
-            return $arr;
-        } catch (PDOException $Exception) {
-            self::desconectar();
-            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-            return json_encode($error);
-        }
+
+            return [
+                "sEcho" => 1,
+                "iTotalRecords" => count($data),
+                "iTotalDisplayRecords" => count($data),
+                "aaData" => $data
+            ];
+        } catch (MongoDB\Driver\Exception\Exception $Exception) {
+            return [
+                'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+            ];
+    }
+        
     }
 
     public function verificarExistenciaDb($id){

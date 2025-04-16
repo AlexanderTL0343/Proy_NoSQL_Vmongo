@@ -1,8 +1,8 @@
 <?php
 session_start();
-require_once '../config/Conexion.php';
+require_once '../config/conexionAtlas.php';
 
-class TablaRol extends Conexion
+class TablaRol extends conexionAtlas
 {
 
     protected static $cnx;
@@ -15,7 +15,7 @@ class TablaRol extends Conexion
 
     public static function getConexion()
     {
-        self::$cnx = Conexion::conectar();
+        self::$cnx = conexionAtlas::conectar();
     }
 
     public static function desconectar()
@@ -46,26 +46,34 @@ class TablaRol extends Conexion
 
     public function listarTablaRol()
     {
-        $query = "SELECT * from roles ";
-        $arr = array();
-        try {
-            self::getConexion();
-            
-            $resultado = self::$cnx->prepare($query);
-            $resultado->execute();
-            self::desconectar();
-            foreach ($resultado->fetchAll() as $encontrado) {
-                $client = new TablaRol();
-                $client->setIdRolPk($encontrado['ID_ROL_PK']);
-                $client->setNombreRol($encontrado['NOMBRE_ROL']);
-                $arr[] = $client;
-            }
-            return $arr;
-        } catch (PDOException $Exception) {
-            self::desconectar();
-            $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-            return json_encode($error);
+      try{
+        $db = ConexionAtlas::conectar();
+
+        $res = $db->ROLES->find();
+
+        $resArray = iterator_to_array($res);
+
+        $data = [];
+
+        foreach ($resArray as $rol) {
+            $data[] = [
+                (string)$rol['_id'],
+                $rol['rol'] ?? ''
+
+            ];
         }
+        return[
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ];
+      }catch (MongoDB\Driver\Exception\Exception $Exception) {
+        return [
+            'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+        ];
+    }
+
     }
 
 }

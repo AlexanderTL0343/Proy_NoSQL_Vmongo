@@ -1,8 +1,8 @@
- <?php
+<?php
     session_start();
-    require_once '../config/Conexion.php';
+    require_once '../config/ConexionAtlas.php';
 
-    class TablaEstados extends Conexion
+    class TablaEstados extends ConexionAtlas
     {
 
         protected static $cnx;
@@ -16,7 +16,7 @@
 
         public static function getConexion()
         {
-            self::$cnx = Conexion::conectar();
+            self::$cnx = ConexionAtlas::conectar();
         }
 
         public static function desconectar()
@@ -56,26 +56,33 @@
 
         public function listarTablaEstados()
         {
-            $query = "SELECT * from ESTADOS ";
-            $arr = array();
-            try {
-                self::getConexion();
+            try{
+                $db = ConexionAtlas::conectar();
 
-                $resultado = self::$cnx->prepare($query);
-                $resultado->execute();
-                self::desconectar();
-                foreach ($resultado->fetchAll() as $encontrado) {
-                    $client = new TablaEstados();
-                    $client->setIdEstadoPk($encontrado['ID_ESTADO_PK']);
-                    $client->setNombreEstado($encontrado['NOMBRE_ESTADO']);
-                    $client->setDescripcion($encontrado['DESCRIPCION']);
-                    $arr[] = $client;
-                }
-                return $arr;
-            } catch (PDOException $Exception) {
-                self::desconectar();
-                $error = "Error " . $Exception->getCode() . ": " . $Exception->getMessage();
-                return json_encode($error);
+                $res = $db->ESTADOS->find();
+
+                $resArray = iterator_to_array($res);
+
+                $data = [];
+
+                foreach ($resArray as $estado) {
+                    $data[] = [
+                        (string)$estado['_id'],
+                        $estado['estado'] ?? ''
+        
+                    ];
+                } 
+                 return[
+                    "sEcho" => 1,
+                    "iTotalRecords" => count($data),
+                    "iTotalDisplayRecords" => count($data),
+                    "aaData" => $data
+                ];
+
+            }catch (MongoDB\Driver\Exception\Exception $Exception) {
+                return [
+                    'error' => "Error " . $Exception->getCode() . ": " . $Exception->getMessage()
+                ];
             }
         }
     }
