@@ -7,5 +7,7 @@ case 'LlenarTablaCali':
             $tabla = new TablaCali();
             echo json_encode($tabla->listarTablaCali());
             break;
+  
         }
+        //
 ?>

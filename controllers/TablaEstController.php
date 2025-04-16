@@ -8,4 +8,5 @@ switch ($_GET['op']) {
     echo json_encode($tabla->listarTablaEstados());
     break;
 }
+//
 ?>
